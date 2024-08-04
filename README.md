@@ -1,6 +1,12 @@
-# Getting Started with Create React App
+# Getting Started With the App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+1. Clone this repository in VsCode
+2. Go to new terminal and split the terminal
+3. In one terminal change the directory to the backend (cd backend)
+4. Keep tldrawapp terminal how it is
+5. In backend terminal, type npm install, then type node server.js to start the server
+6. In the tldrawapp terminal, type npm install, then type npm start
+7. You can now use the app
 
 ## Available Scripts
 
