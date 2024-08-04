@@ -7,7 +7,9 @@ export default function App() {
   const [editor, setEditor] = useState(null);
   const [description, setDescription] = useState('');
   const [showUseCaseBox, setShowUseCaseBox] = useState(false);
+  const [showCodeBox, setShowCodeBox] = useState(false);
   const [showTestCasesBox, setShowTestCasesBox] = useState(false);
+  const [showResultsBox, setShowResultsBox] = useState(false);
   const [notification, setNotification] = useState(null);
 
   const onMount = (editor) => {
@@ -83,9 +85,9 @@ export default function App() {
     if (!showUseCaseBox) {
       editor.createShapes([
         {
-          id: 'shape:3',
+          id: 'shape:usecasebox',
           type: 'geo',
-          x: 600,
+          x: 500,
           y: 100,
           props: {
             w: 700,
@@ -101,12 +103,24 @@ export default function App() {
             verticalAlign: 'start',
           },
         },
+        {
+          id: 'shape:usecaselabel',
+          type: 'text',
+          x: 500,
+          y: 50,
+          props: {
+            text: 'Use Case',
+            size: 'l',
+            font: 'draw',
+            color: 'black',
+          },
+        },
       ]);
       setShowUseCaseBox(true);
     } else {
       editor.updateShapes([
         {
-          id: 'shape:3',
+          id: 'shape:usecasebox',
           type: 'geo',
           props: {
             text: useCaseDescription,
@@ -116,9 +130,83 @@ export default function App() {
     }
   };
 
+  const handleGenerateCodeClick = async () => {
+    let code = 'JavaScript Code';
+
+    if (description.trim() === '' || description === 'Type here...') {
+      editor.updateShapes([
+        {
+          id: 'shape:1',
+          type: 'geo',
+          props: {
+            text: 'Type here...',
+          },
+        },
+      ]);
+    } else {
+      try {
+        const useCaseDescription = editor.getShape('shape:usecasebox').props.text;
+        const response = await axios.post('http://localhost:5001/api/code', {
+          description: description,
+          useCaseDescription: useCaseDescription,
+        });
+        code = response.data.completion || 'JavaScript Code';
+      } catch (error) {
+        console.error('Error generating JavaScript code:', error);
+        code = 'Error generating code. Please try again.';
+      }
+    }
+
+    if (!showCodeBox) {
+      editor.createShapes([
+        {
+          id: 'shape:codebox',
+          type: 'geo',
+          x: 1250,
+          y: 100,
+          props: {
+            w: 700,
+            h: 600,
+            geo: 'rectangle',
+            color: 'black',
+            fill: 'none',
+            dash: 'draw',
+            size: 'm',
+            font: 'draw',
+            text: code,
+            align: 'start',
+            verticalAlign: 'start',
+          },
+        },
+        {
+          id: 'shape:codelabel',
+          type: 'text',
+          x: 1250,
+          y: 50,
+          props: {
+            text: 'Code',
+            size: 'l',
+            font: 'draw',
+            color: 'black',
+          },
+        },
+      ]);
+      setShowCodeBox(true);
+    } else {
+      editor.updateShapes([
+        {
+          id: 'shape:codebox',
+          type: 'geo',
+          props: {
+            text: code,
+          },
+        },
+      ]);
+    }
+  };
+
   const handleTestCasesClick = async () => {
     let testCases = 'Test Cases';
-    let newAlternateFlows = [];
 
     if (description.trim() === '' || description === 'Type here...') {
       editor.updateShapes([
@@ -136,7 +224,6 @@ export default function App() {
           description: description,
         });
         testCases = response.data.completion || 'Test Cases';
-        newAlternateFlows = response.data.newAlternateFlows || [];
       } catch (error) {
         console.error('Error generating test cases:', error);
         testCases = 'Error generating test cases. Please try again.';
@@ -146,9 +233,9 @@ export default function App() {
     if (!showTestCasesBox) {
       editor.createShapes([
         {
-          id: 'shape:4',
+          id: 'shape:testcasebox',
           type: 'geo',
-          x: 1350,
+          x: 2000,
           y: 100,
           props: {
             w: 700,
@@ -164,12 +251,24 @@ export default function App() {
             verticalAlign: 'start',
           },
         },
+        {
+          id: 'shape:testcaselabel',
+          type: 'text',
+          x: 2000,
+          y: 50,
+          props: {
+            text: 'Test Cases',
+            size: 'l',
+            font: 'draw',
+            color: 'black',
+          },
+        },
       ]);
       setShowTestCasesBox(true);
     } else {
       editor.updateShapes([
         {
-          id: 'shape:4',
+          id: 'shape:testcasebox',
           type: 'geo',
           props: {
             text: testCases,
@@ -177,37 +276,87 @@ export default function App() {
         },
       ]);
     }
+  };
 
-    // Update Use Case Description with new alternate flows
-    if (newAlternateFlows.length > 0) {
-      const useCaseShape = editor.getShape('shape:3');
-      if (useCaseShape) {
-        let updatedUseCaseText = useCaseShape.props.text;
-        newAlternateFlows.forEach(flow => {
-          updatedUseCaseText += `\n\nNew Alternate Flow:\n${flow}`;
-        });
+  const handleRunTestsClick = async () => {
+    let results = 'Test Results';
+    const code = editor.getShape('shape:codebox').props.text;
+    const testCases = editor.getShape('shape:testcasebox').props.text;
 
-        editor.updateShapes([
-          {
-            id: 'shape:3',
-            type: 'geo',
-            props: {
-              text: updatedUseCaseText,
-            },
+    if (description.trim() === '' || description === 'Type here...') {
+      editor.updateShapes([
+        {
+          id: 'shape:1',
+          type: 'geo',
+          props: {
+            text: 'Type here...',
           },
-        ]);
-
-        setNotification("Use Case Description updated with new alternate flows.");
-        setTimeout(() => setNotification(null), 5000);
+        },
+      ]);
+    } else {
+      try {
+        const response = await axios.post('http://localhost:5001/api/runtests', {
+          code: code,
+          testCases: testCases,
+        });
+        results = response.data.completion || 'Test Results';
+      } catch (error) {
+        console.error('Error running test cases:', error);
+        results = 'Error running test cases. Please try again.';
       }
+    }
+
+    if (!showResultsBox) {
+      editor.createShapes([
+        {
+          id: 'shape:resultsbox',
+          type: 'geo',
+          x: 2750,
+          y: 100,
+          props: {
+            w: 700,
+            h: 600,
+            geo: 'rectangle',
+            color: 'black',
+            fill: 'none',
+            dash: 'draw',
+            size: 'm',
+            font: 'draw',
+            text: results,
+            align: 'start',
+            verticalAlign: 'start',
+          },
+        },
+        {
+          id: 'shape:resultslabel',
+          type: 'text',
+          x: 2750,
+          y: 50,
+          props: {
+            text: 'Test Results',
+            size: 'l',
+            font: 'draw',
+            color: 'black',
+          },
+        },
+      ]);
+      setShowResultsBox(true);
+    } else {
+      editor.updateShapes([
+        {
+          id: 'shape:resultsbox',
+          type: 'geo',
+          props: {
+            text: results,
+          },
+        },
+      ]);
     }
   };
 
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
-      <Tldraw
-        onMount={onMount}
-      />
+      <Tldraw onMount={onMount} />
       <div style={{
         position: 'absolute',
         bottom: '20px',
@@ -233,6 +382,20 @@ export default function App() {
         </button>
         <button
           style={{
+            backgroundColor: 'purple',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            padding: '10px 20px',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+          onClick={handleGenerateCodeClick}
+        >
+          Generate Code
+        </button>
+        <button
+          style={{
             backgroundColor: 'green',
             color: 'white',
             border: 'none',
@@ -244,6 +407,20 @@ export default function App() {
           onClick={handleTestCasesClick}
         >
           Generate Test Cases
+        </button>
+        <button
+          style={{
+            backgroundColor: 'orange',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            padding: '10px 20px',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+          onClick={handleRunTestsClick}
+        >
+          Run Tests
         </button>
       </div>
       {notification && (
