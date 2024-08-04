@@ -7,6 +7,7 @@
 5. In backend terminal, type npm install, then type node server.js to start the server
 6. In the tldrawapp terminal, type npm install, then type npm start
 7. You can now use the app
+.....Dont worry about the unfunded packages for now....
 
 ## Available Scripts
 
