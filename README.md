@@ -4,7 +4,7 @@
 2. Go to new terminal and split the terminal
 3. In one terminal change the directory to the backend (cd backend)
 4. Keep tldrawapp terminal how it is
-5. In backend terminal, type npm install, then type node server.js to start the server
+5. In backend terminal, type npm install, install vm2 (npm install vm2) then type node server.js to start the server
 6. In the tldrawapp terminal, type npm install, then type npm start
 7. You can now use the app
 .....Dont worry about the unfunded packages for now....
