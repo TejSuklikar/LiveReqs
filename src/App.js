@@ -220,8 +220,10 @@ export default function App() {
       ]);
     } else {
       try {
+        const code = editor.getShape('shape:codebox').props.text;
         const response = await axios.post('http://localhost:5001/api/testcases', {
           description: description,
+          code: code,
         });
         testCases = response.data.completion || 'Test Cases';
       } catch (error) {
