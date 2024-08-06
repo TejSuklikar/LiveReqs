@@ -373,7 +373,7 @@ export default function App() {
         zIndex: 1000,
       }}>
         <input
-          type="text"
+          type="password"
           placeholder="Enter API Key"
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
