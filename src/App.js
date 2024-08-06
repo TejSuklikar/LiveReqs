@@ -11,6 +11,7 @@ export default function App() {
   const [showTestCasesBox, setShowTestCasesBox] = useState(false);
   const [showResultsBox, setShowResultsBox] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [apiKey, setApiKey] = useState('');
 
   const onMount = (editor) => {
     setEditor(editor);
@@ -74,6 +75,7 @@ export default function App() {
       try {
         const response = await axios.post('http://localhost:5001/api/usecase', {
           description: description,
+          apiKey: apiKey,
         });
         useCaseDescription = response.data.completion || 'Use Case Description';
       } catch (error) {
@@ -149,6 +151,7 @@ export default function App() {
         const response = await axios.post('http://localhost:5001/api/code', {
           description: description,
           useCaseDescription: useCaseDescription,
+          apiKey: apiKey,
         });
         code = response.data.completion || 'JavaScript Code';
       } catch (error) {
@@ -224,6 +227,7 @@ export default function App() {
         const response = await axios.post('http://localhost:5001/api/testcases', {
           description: description,
           code: code,
+          apiKey: apiKey,
         });
         testCases = response.data.completion || 'Test Cases';
       } catch (error) {
@@ -361,13 +365,25 @@ export default function App() {
       <Tldraw onMount={onMount} />
       <div style={{
         position: 'absolute',
-        bottom: '20px',
+        bottom: '50px',
         right: '20px',
         display: 'flex',
         flexDirection: 'column',
         gap: '10px',
         zIndex: 1000,
       }}>
+        <input
+          type="text"
+          placeholder="Enter API Key"
+          value={apiKey}
+          onChange={(e) => setApiKey(e.target.value)}
+          style={{
+            padding: '20px',
+            borderRadius: '5px',
+            border: '3px solid #000',
+            marginBottom: '10px',
+          }}
+        />
         <button
           style={{
             backgroundColor: 'blue',
@@ -375,10 +391,11 @@ export default function App() {
             border: 'none',
             borderRadius: '5px',
             padding: '10px 20px',
-            cursor: 'pointer',
+            cursor: apiKey ? 'pointer' : 'not-allowed',
             whiteSpace: 'nowrap',
           }}
           onClick={handleGoClick}
+          disabled={!apiKey}
         >
           Use Case
         </button>
@@ -389,10 +406,11 @@ export default function App() {
             border: 'none',
             borderRadius: '5px',
             padding: '10px 20px',
-            cursor: 'pointer',
+            cursor: apiKey ? 'pointer' : 'not-allowed',
             whiteSpace: 'nowrap',
           }}
           onClick={handleGenerateCodeClick}
+          disabled={!apiKey}
         >
           Generate Code
         </button>
@@ -403,10 +421,11 @@ export default function App() {
             border: 'none',
             borderRadius: '5px',
             padding: '10px 20px',
-            cursor: 'pointer',
+            cursor: apiKey ? 'pointer' : 'not-allowed',
             whiteSpace: 'nowrap',
           }}
           onClick={handleTestCasesClick}
+          disabled={!apiKey}
         >
           Generate Test Cases
         </button>
@@ -417,10 +436,11 @@ export default function App() {
             border: 'none',
             borderRadius: '5px',
             padding: '10px 20px',
-            cursor: 'pointer',
+            cursor: apiKey ? 'pointer' : 'not-allowed',
             whiteSpace: 'nowrap',
           }}
           onClick={handleRunTestsClick}
+          disabled={!apiKey}
         >
           Run Tests
         </button>
