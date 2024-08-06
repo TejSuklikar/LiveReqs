@@ -3,20 +3,17 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { Anthropic } = require('@anthropic-ai/sdk');
 const runCodeAndTests = require('./codeExecutor'); // Import the code execution function
-require('dotenv').config();
 
 const app = express();
 const PORT = 5001; // Backend server port
-
-const anthropic = new Anthropic({
-  apiKey: process.env.CLAUDE_API_KEY,
-});
 
 app.use(cors());
 app.use(bodyParser.json());
 
 app.post('/api/usecase', async (req, res) => {
-  const description = req.body.description;
+  const { description, apiKey } = req.body;
+  const anthropic = new Anthropic({ apiKey });
+
   const prompt = `Convert the text description to a detailed use case using the format provided. 
   Pre-conditions: What has happened before the System is ready to achieve the desired goal
   Success Criteria: How will we know that the system has succeeded in achieving the goal
@@ -76,7 +73,9 @@ app.post('/api/usecase', async (req, res) => {
 });
 
 app.post('/api/code', async (req, res) => {
-  const { description, useCaseDescription } = req.body;
+  const { description, useCaseDescription, apiKey } = req.body;
+  const anthropic = new Anthropic({ apiKey });
+
   const prompt = `Create a JavaScript simulation based on the Use Case Description and Description. The simulation should be designed to handle a wide range of scenarios and be easily adaptable to different contexts. Structure the code for easy editing. Here are the key components to include:
 
 1. A main class named Simulation that represents the core functionality of the described process flow.
@@ -125,7 +124,9 @@ Use Case Description: ${useCaseDescription}`;
 });
 
 app.post('/api/testcases', async (req, res) => {
-  const { description, code } = req.body;
+  const { description, code, apiKey } = req.body;
+  const anthropic = new Anthropic({ apiKey });
+
   const prompt = `Based on the description and code, create a comprehensive set of test cases both edge cases and regular cases that test all possible kinds of inputs and make sure these cases ensure a correct output. It is very important that the expected output aligns with the output from the test case input. Specify specific input values and expected output values.
 
 Include the test cases and make sure they are numbered, very descriptive, and easy to understand. Provide both an English explanation and the corresponding JavaScript code for each test case. Ensure that each test case is valid JavaScript code and can be run without syntax errors. If there are test cases that are generated that aren't present in the use case description, like there's a test case and there's no alternate flow to run it, make sure to also update the use case description and add that alternate flow. Make sure it is a logical flow. Do not include introductory or concluding statements. Ensure the test cases can be simulated in the code.
