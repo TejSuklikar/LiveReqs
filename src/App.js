@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Tldraw } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 import axios from 'axios';
+import { saveAs } from 'file-saver';
 
 export default function App() {
   const [editor, setEditor] = useState(null);
   const [description, setDescription] = useState('');
   const [showUseCaseBox, setShowUseCaseBox] = useState(false);
+  const [showDiagramBox, setShowDiagramBox] = useState(false);
   const [showCodeBox, setShowCodeBox] = useState(false);
   const [showTestCasesBox, setShowTestCasesBox] = useState(false);
   const [showResultsBox, setShowResultsBox] = useState(false);
@@ -132,6 +134,82 @@ export default function App() {
     }
   };
 
+  const handleGenerateMermaidMarkdownClick = async () => {
+    let diagram = 'Mermaid Markdown';
+
+    if (description.trim() === '' || description === 'Type here...') {
+      editor.updateShapes([
+        {
+          id: 'shape:1',
+          type: 'geo',
+          props: {
+            text: 'Type here...',
+          },
+        },
+      ]);
+    } else {
+      try {
+        const useCaseDescription = editor.getShape('shape:usecasebox').props.text;
+        const response = await axios.post('http://localhost:5001/api/diagram', {
+          description: description,
+          useCaseDescription: useCaseDescription,
+          apiKey: apiKey,
+        });
+        diagram = response.data.completion || 'Mermaid Markdown';
+      } catch (error) {
+        console.error('Error generating Mermaid Markdown:', error);
+        diagram = 'Error generating diagram. Please try again.';
+      }
+    }
+
+    if (!showDiagramBox) {
+      editor.createShapes([
+        {
+          id: 'shape:markdownbox',
+          type: 'geo',
+          x: 1300,
+          y: 100,
+          props: {
+            w: 700,
+            h: 600,
+            geo: 'rectangle',
+            color: 'black',
+            fill: 'none',
+            dash: 'draw',
+            size: 'm',
+            font: 'draw',
+            text: diagram,
+            align: 'start',
+            verticalAlign: 'start',
+          },
+        },
+        {
+          id: 'shape:markdownlabel',
+          type: 'text',
+          x: 1300,
+          y: 50,
+          props: {
+            text: 'Markdown',
+            size: 'l',
+            font: 'draw',
+            color: 'black',
+          },
+        },
+      ]);
+      setShowDiagramBox(true);
+    } else {
+      editor.updateShapes([
+        {
+          id: 'shape:markdownbox',
+          type: 'geo',
+          props: {
+            text: diagram,
+          },
+        },
+      ]);
+    }
+  };
+  
   const handleGenerateCodeClick = async () => {
     let code = 'JavaScript Code';
 
@@ -165,7 +243,7 @@ export default function App() {
         {
           id: 'shape:codebox',
           type: 'geo',
-          x: 1250,
+          x: 2100,
           y: 100,
           props: {
             w: 700,
@@ -184,7 +262,7 @@ export default function App() {
         {
           id: 'shape:codelabel',
           type: 'text',
-          x: 1250,
+          x: 2100,
           y: 50,
           props: {
             text: 'Code',
@@ -241,7 +319,7 @@ export default function App() {
         {
           id: 'shape:testcasebox',
           type: 'geo',
-          x: 2000,
+          x: 2900,
           y: 100,
           props: {
             w: 700,
@@ -260,7 +338,7 @@ export default function App() {
         {
           id: 'shape:testcaselabel',
           type: 'text',
-          x: 2000,
+          x: 2900,
           y: 50,
           props: {
             text: 'Test Cases',
@@ -317,7 +395,7 @@ export default function App() {
         {
           id: 'shape:resultsbox',
           type: 'geo',
-          x: 2750,
+          x: 3700,
           y: 100,
           props: {
             w: 700,
@@ -336,7 +414,7 @@ export default function App() {
         {
           id: 'shape:resultslabel',
           type: 'text',
-          x: 2750,
+          x: 3700,
           y: 50,
           props: {
             text: 'Test Results',
@@ -360,9 +438,61 @@ export default function App() {
     }
   };
 
+  const handleSave = () => {
+    if (editor) {
+      const json = editor.store.serialize(); // Use serialize method
+      const blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
+      const filename = prompt('Enter filename to save:', 'usecase.tldr');
+      if (filename) {
+        saveAs(blob, filename);
+      }
+    }
+  };
+
+  const handleOpen = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.tldr';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const content = event.target.result;
+        const snapshot = JSON.parse(content);
+        if (editor && editor.store) {
+          editor.store.loadSnapshot(snapshot);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+  
+  
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const json = JSON.parse(e.target.result);
+        editor.store.deserialize(json); // Use deserialize method
+      };
+      reader.readAsText(file);
+    }
+  };
+
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
       <Tldraw onMount={onMount} />
+      <input
+        type="file"
+        id="fileInput"
+        accept=".tldr"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
       <div style={{
         position: 'absolute',
         bottom: '50px',
@@ -382,6 +512,7 @@ export default function App() {
             borderRadius: '5px',
             border: '3px solid #000',
             marginBottom: '10px',
+            color: '#000',
           }}
         />
         <button
@@ -397,11 +528,26 @@ export default function App() {
           onClick={handleGoClick}
           disabled={!apiKey}
         >
-          Use Case
+          Generate Use Case
         </button>
         <button
           style={{
             backgroundColor: 'purple',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            padding: '10px 20px',
+            cursor: apiKey ? 'pointer' : 'not-allowed',
+            whiteSpace: 'nowrap',
+          }}
+          onClick={handleGenerateMermaidMarkdownClick}
+          disabled={!apiKey}
+        >
+          Generate Markdown
+        </button>
+        <button
+          style={{
+            backgroundColor: 'red',
             color: 'white',
             border: 'none',
             borderRadius: '5px',
@@ -443,6 +589,44 @@ export default function App() {
           disabled={!apiKey}
         >
           Run Tests
+        </button>
+      </div>
+      <div style={{
+        position: 'absolute',
+        bottom: '50px',
+        left: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        zIndex: 1000,
+      }}>
+        <button
+          style={{
+            backgroundColor: 'grey',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            padding: '10px 20px',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+          onClick={handleSave}
+        >
+          Save
+        </button>
+        <button
+          style={{
+            backgroundColor: 'grey',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            padding: '10px 20px',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+          onClick={handleOpen}
+        >
+          Open
         </button>
       </div>
       {notification && (
