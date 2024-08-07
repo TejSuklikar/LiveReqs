@@ -72,35 +72,74 @@ app.post('/api/usecase', async (req, res) => {
   }
 });
 
-app.post('/api/code', async (req, res) => {
+app.post('/api/diagram', async (req, res) => {
   const { description, useCaseDescription, apiKey } = req.body;
   const anthropic = new Anthropic({ apiKey });
 
-  const prompt = `Create a JavaScript simulation based on the Use Case Description and Description. The simulation should be designed to handle a wide range of scenarios and be easily adaptable to different contexts. Structure the code for easy editing. Here are the key components to include:
-
-1. A main class named Simulation that represents the core functionality of the described process flow.
-2. Methods within the class to simulate various actions as described in the use case.
-3. A flexible system for tracking related items or requirements based on user interactions.
-
-Ensure that the code:
-- Considers general constraints that could apply to various scenarios.
-- Structures the code in a clear, readable manner, using appropriate comments to explain complex logic.
-
-Here is the format:
-
-class Simulation {
-  // Core functionality methods
-}
-
-// Example usage
-const simulation = new Simulation();
-// Call methods on the simulation instance as described in the use case
-
-Make sure to generate the entire full code and ensure it is easy to follow. This is crucial. Do not include introductory or concluding statements. Only provide the code. And with the code
-don't show example executions and stuff like that. Just the functionality methods and class. 
+  const prompt = `Generate the mermaid markdown for the use case that was just created. Also feel
+  free to reference the description. Only provide the mermaid markdown, without any additional explanations or comments.
+  The mermaid markdown should accurately represent all flows and scenarios described in the use case, including alternate flows.
 
 Description: ${description}
 Use Case Description: ${useCaseDescription}`;
+
+  try {
+    const msg = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20240620',
+      max_tokens: 2000,
+      temperature: 0,
+      system: prompt,
+      messages: [
+        {
+          role: 'user',
+          content: `Convert the use case to mermaid markdown.`,
+        },
+      ],
+    });
+
+    res.json({ completion: msg.content[0].text });
+  } catch (error) {
+    console.error('Error calling Claude API:', error);
+    res.status(500).json({ error: 'Failed to generate mermaid markdown' });
+  }
+});
+
+app.post('/api/code', async (req, res) => {
+  const { description, useCaseDescription, mermaidMarkdown, apiKey } = req.body;
+  const anthropic = new Anthropic({ apiKey });
+
+  // If mermaidMarkdown is not provided, we'll need to generate it first
+  let markdownToUse = mermaidMarkdown;
+  if (!markdownToUse) {
+    try {
+      const diagramResponse = await anthropic.messages.create({
+        model: 'claude-3-5-sonnet-20240620',
+        max_tokens: 2000,
+        temperature: 0,
+        system: `Generate the mermaid markdown for the following use case. Only provide the mermaid markdown, without any additional explanations or comments.`,
+        messages: [
+          {
+            role: 'user',
+            content: `Description: ${description}\nUse Case Description: ${useCaseDescription}`,
+          },
+        ],
+      });
+      markdownToUse = diagramResponse.content[0].text;
+    } catch (error) {
+      console.error('Error generating Mermaid markdown:', error);
+      return res.status(500).json({ error: 'Failed to generate Mermaid markdown' });
+    }
+  }
+
+  const prompt = `Convert the following mermaid markdown to JavaScript code that can be run in a 
+  simulation. When test cases are created in later steps they need to be able to be run in this code. Only provide
+  the necessary code for running the simulation. Also don't have an intro or beginning stuff just the code. The code
+  should be structured as if/else statements or switch/case so it clearly shows all the possible flows. 
+
+Make sure to generate the entire full code and ensure it is easy to follow. This is crucial. Don't include the intro or end stuff just the code.
+
+Mermaid Markdown:
+${markdownToUse}`;
 
   try {
     const msg = await anthropic.messages.create({
@@ -111,7 +150,7 @@ Use Case Description: ${useCaseDescription}`;
       messages: [
         {
           role: 'user',
-          content: description,
+          content: `Convert the mermaid markdown to JavaScript code.`,
         },
       ],
     });
@@ -130,60 +169,10 @@ app.post('/api/testcases', async (req, res) => {
   const prompt = `Based on the description and code, create a comprehensive set of test cases both edge cases and regular cases that test all possible kinds of inputs and make sure these cases ensure a correct output. It is very important that the expected output aligns with the output from the test case input. Specify specific input values and expected output values.
 
 Include the test cases and make sure they are numbered, very descriptive, and easy to understand. Provide both an English explanation and the corresponding JavaScript code for each test case. Ensure that each test case is valid JavaScript code and can be run without syntax errors. If there are test cases that are generated that aren't present in the use case description, like there's a test case and there's no alternate flow to run it, make sure to also update the use case description and add that alternate flow. Make sure it is a logical flow. Do not include introductory or concluding statements. Ensure the test cases can be simulated in the code.
+Here is the codeExecutor code. The code you generate must be able to be run in this codeExecutor. If it is not able to be run in this codeExecutor, it will be rejected. Basically each test case needs to be an option in the if else statements
+that were created in the code. They need to follow some flow. THey need to be easily runnable based on the code that was created. So make sure that is done, probably the 
+most important part. 
 
-Here is the codeExecutor code. The code you generate must be able to be run in this codeExecutor. If it is not able to be run in this codeExecutor, it will be rejected.
-
-\`\`\`javascript
-const { VM } = require('vm2');
-
-const runCodeAndTests = (code, testCases) => {
-  const vm = new VM({
-    timeout: 2000,
-    sandbox: {},
-  });
-
-  let results = '';
-
-  try {
-    // Run the provided code
-    vm.run(code);
-
-    // Evaluate the test cases
-    const testCaseResults = testCases.map((testCase, index) => {
-      try {
-        const result = vm.run(testCase.code);
-        return \`Test Case \${index + 1}: Passed\`;
-      } catch (error) {
-        return \`Test Case \${index + 1}: Failed - \${error.message}\`;
-      }
-    });
-
-    results = testCaseResults.join('\n');
-  } catch (error) {
-    results = \`Error executing code: \${error.message}\`;
-  }
-
-  return results;
-};
-
-module.exports = runCodeAndTests;
-\`\`\`
-
-Make sure the test cases are written in the following format:
-
-\`\`\`javascript
-// Test Case 1: Description of the test case in English
-(function() {
-  // Code for test case 1
-})();
-
-// Test Case 2: Description of the test case in English
-(function() {
-  // Code for test case 2
-})();
-\`\`\`
-
-Here is the code:
 ${code}`;
 
   try {
