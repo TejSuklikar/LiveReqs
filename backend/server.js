@@ -134,9 +134,11 @@ app.post('/api/code', async (req, res) => {
   const prompt = `Convert the following mermaid markdown to JavaScript code that can be run in a 
   simulation. When test cases are created in later steps they need to be able to be run in this code. Only provide
   the necessary code for running the simulation. Also don't have an intro or beginning stuff just the code. The code
-  should be structured as if/else statements or switch/case so it clearly shows all the possible flows. 
+  should be structured as if/else statements or switch/case so it clearly shows all the possible flows. Should be like one main
+  function then if/else or switch/case statements. This easily represents all the possible flows. 
+  ENSURE THERE ARE NO SYNTAX OR LOGIC OR ANY KIND OF ERROR
 
-Make sure to generate the entire full code and ensure it is easy to follow. This is crucial. Don't include the intro or end stuff just the code.
+Make sure to generate the entire full code and ensure it is easy to follow. This is crucial. Don't include the intro or end stuff just the code. Just the code. 
 
 Mermaid Markdown:
 ${markdownToUse}`;
@@ -163,17 +165,52 @@ ${markdownToUse}`;
 });
 
 app.post('/api/testcases', async (req, res) => {
-  const { description, code, apiKey } = req.body;
+  const { useCaseDescription, code, apiKey } = req.body;
   const anthropic = new Anthropic({ apiKey });
 
-  const prompt = `Based on the description and code, create a comprehensive set of test cases both edge cases and regular cases that test all possible kinds of inputs and make sure these cases ensure a correct output. It is very important that the expected output aligns with the output from the test case input. Specify specific input values and expected output values.
+  const prompt = `Given the following use case description and simulation code, create a set of test cases that cover all possible flows, including the basic flow and all alternate flows. Analyze the use case and code structure to create appropriate test cases.
 
-Include the test cases and make sure they are numbered, very descriptive, and easy to understand. Provide both an English explanation and the corresponding JavaScript code for each test case. Ensure that each test case is valid JavaScript code and can be run without syntax errors. If there are test cases that are generated that aren't present in the use case description, like there's a test case and there's no alternate flow to run it, make sure to also update the use case description and add that alternate flow. Make sure it is a logical flow. Do not include introductory or concluding statements. Ensure the test cases can be simulated in the code.
-Here is the codeExecutor code. The code you generate must be able to be run in this codeExecutor. If it is not able to be run in this codeExecutor, it will be rejected. Basically each test case needs to be an option in the if else statements
-that were created in the code. They need to follow some flow. THey need to be easily runnable based on the code that was created. So make sure that is done, probably the 
-most important part. 
+Use Case Description:
+${useCaseDescription}
 
-${code}`;
+Simulation Code:
+${code}
+
+Generate 10-12 test cases in the following format:
+
+// Test Case N: Brief description of what this test case is checking
+function testCaseN() {
+  // Setup: Modify any necessary global variables or functions to control the simulation
+  // For example, if the code uses Math.random(), you might override it like this:
+  // const originalRandom = Math.random;
+  // Math.random = () => 0.5; // or any other logic to control flow
+
+  // Run the simulation
+  // If the main function is named 'simulationFunction', call it like this:
+  // simulationFunction();
+
+  // Cleanup: Restore any modified functions or variables
+  // For example: Math.random = originalRandom;
+}
+
+const expectedOutputsN = [
+  "Step 1 output",
+  "Step 2 output",
+  // ... more expected outputs
+];
+
+Ensure that your test cases cover:
+1. The basic flow described in the use case
+2. All alternate flows mentioned in the use case
+3. Edge cases and error scenarios that can be inferred from the use case and code
+
+IMPORTANT: 
+- The expected outputs must exactly match the console.log statements in the provided code, including punctuation and capitalization. 
+- Each test case should start with a brief, one-line description comment explaining what it's testing.
+- Do not include any additional explanations or comments outside of the function definitions and the initial description comment.
+- Adapt your test cases to the specific structure and logic of the provided code and use case.
+- Each test case should be designed to test a specific flow through the simulation as described in the use case.
+- These cases basically need to be different choices taken at different switch cases or if/else`;
 
   try {
     const msg = await anthropic.messages.create({
@@ -184,7 +221,7 @@ ${code}`;
       messages: [
         {
           role: 'user',
-          content: `${description}\n\n${code}`,
+          content: `Generate test cases for the given use case and simulation code.`,
         },
       ],
     });
@@ -199,14 +236,12 @@ ${code}`;
 app.post('/api/runtests', (req, res) => {
   const { code, testCases } = req.body;
 
-  const testCaseList = testCases.split('\n\n').map(testCase => {
-    return { code: testCase };
-  });
+  // Log the received code and test cases for debugging
+  console.log('Received code:', code);
+  console.log('Received test cases:', testCases);
 
-  // Log the test cases for debugging purposes
-  console.log('Test Cases:', testCaseList);
-
-  const results = runCodeAndTests(code, testCaseList);
+  // We'll pass testCases directly to runCodeAndTests
+  const results = runCodeAndTests(code, testCases);
 
   res.json({ completion: results });
 });
