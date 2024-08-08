@@ -10,6 +10,25 @@ const PORT = 5001; // Backend server port
 app.use(cors());
 app.use(bodyParser.json());
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 seconds
+
+async function callAnthropicWithRetry(anthropic, params, maxRetries = MAX_RETRIES) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await anthropic.messages.create(params);
+    } catch (error) {
+      if (error.status === 529 && attempt < maxRetries) {
+        console.log(`API overloaded. Retrying in ${RETRY_DELAY/1000} seconds... (Attempt ${attempt} of ${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw new Error('Max retries reached. API is still overloaded.');
+}
+
 app.post('/api/usecase', async (req, res) => {
   const { description, apiKey } = req.body;
   const anthropic = new Anthropic({ apiKey });
@@ -52,7 +71,7 @@ app.post('/api/usecase', async (req, res) => {
   ${description}`;
 
   try {
-    const msg = await anthropic.messages.create({
+    const msg = await callAnthropicWithRetry(anthropic, {
       model: 'claude-3-5-sonnet-20240620',
       max_tokens: 1000,
       temperature: 0,
@@ -84,7 +103,7 @@ Description: ${description}
 Use Case Description: ${useCaseDescription}`;
 
   try {
-    const msg = await anthropic.messages.create({
+    const msg = await callAnthropicWithRetry(anthropic, {
       model: 'claude-3-5-sonnet-20240620',
       max_tokens: 2000,
       temperature: 0,
@@ -112,7 +131,7 @@ app.post('/api/code', async (req, res) => {
   let markdownToUse = mermaidMarkdown;
   if (!markdownToUse) {
     try {
-      const diagramResponse = await anthropic.messages.create({
+      const diagramResponse = await callAnthropicWithRetry(anthropic, {
         model: 'claude-3-5-sonnet-20240620',
         max_tokens: 2000,
         temperature: 0,
@@ -139,12 +158,59 @@ app.post('/api/code', async (req, res) => {
   ENSURE THERE ARE NO SYNTAX OR LOGIC OR ANY KIND OF ERROR
 
 Make sure to generate the entire full code and ensure it is easy to follow. This is crucial. Don't include the intro or end stuff just the code. Just the code. 
+This is an example of what the code should look like. Should be structured like this.:
+function cricketSimulation(scenario) {
+  console.log("Starting cricket simulation");
+  switch (scenario) {
+    case "hit":
+      console.log("Bowler delivers the ball");
+      console.log("Batter hits the ball");
+      console.log("End of delivery");
+      break;
+    case "leave_miss":
+      console.log("Bowler delivers the ball");
+      console.log("Batter leaves the ball");
+      console.log("Ball misses stumps");
+      console.log("End of delivery");
+      break;
+    case "leave_out":
+      console.log("Bowler delivers the ball");
+      console.log("Batter leaves the ball");
+      console.log("Ball hits stumps");
+      console.log("Batter out");
+      console.log("End of delivery");
+      break;
+    case "lbw_out":
+      console.log("Bowler delivers the ball");
+      console.log("Ball strikes batter's pad");
+      console.log("Umpire gives LBW");
+      console.log("Batter out");
+      console.log("End of delivery");
+      break;
+    case "lbw_not_out":
+      console.log("Bowler delivers the ball");
+      console.log("Ball strikes batter's pad");
+      console.log("Umpire denies LBW");
+      console.log("End of delivery");
+      break;
+    case "wide":
+      console.log("Bowler delivers the ball");
+      console.log("Ball is too wide");
+      console.log("Umpire calls wide");
+      console.log("Extra run added");
+      console.log("End of delivery");
+      break;
+    default:
+      console.log("Invalid scenario");
+      break;
+  }
+}
 
 Mermaid Markdown:
 ${markdownToUse}`;
 
   try {
-    const msg = await anthropic.messages.create({
+    const msg = await callAnthropicWithRetry(anthropic, {
       model: 'claude-3-5-sonnet-20240620',
       max_tokens: 4000,
       temperature: 0,
@@ -176,29 +242,60 @@ ${useCaseDescription}
 Simulation Code:
 ${code}
 
-Generate 10-12 test cases in the following format:
+Generate as many test cases as possible that cover all the possible flows described in the use case description and code. in the following format:
 
-// Test Case N: Brief description of what this test case is checking
-function testCaseN() {
-  // Setup: Modify any necessary global variables or functions to control the simulation
-  // For example, if the code uses Math.random(), you might override it like this:
-  // const originalRandom = Math.random;
-  // Math.random = () => 0.5; // or any other logic to control flow
-
-  // Run the simulation
-  // If the main function is named 'simulationFunction', call it like this:
-  // simulationFunction();
-
-  // Cleanup: Restore any modified functions or variables
-  // For example: Math.random = originalRandom;
+// Test case for successful purchase
+function testCase1() {
+  eCommerceSimulation("successful_purchase");
 }
-
-const expectedOutputsN = [
-  "Step 1 output",
-  "Step 2 output",
-  // ... more expected outputs
+const expectedOutput1 = [
+  "Starting e-commerce simulation",
+  "User accesses website",
+  "System displays product catalog",
+  "User browses catalog",
+  "User selects items",
+  "System adds items to cart",
+  "User proceeds to checkout",
+  "System requests shipping information",
+  "User enters shipping information",
+  "System presents payment methods",
+  "User selects payment method",
+  "User confirms purchase",
+  "System processes payment with Payment Gateway",
+  "Payment successful",
+  "System sends confirmation email to user",
+  "System processes order with Warehouse",
+  "Warehouse packs and prepares items",
+  "Shipping Service provides tracking number",
+  "System sends tracking number to user",
+  "User tracks shipment",
+  "Shipping Service delivers package"
 ];
 
+// Test case for payment failure
+function testCase2() {
+  eCommerceSimulation("payment_failure");
+}
+const expectedOutput2 = [
+  "Starting e-commerce simulation",
+  "User accesses website",
+  "System displays product catalog",
+  "User browses catalog",
+  "User selects items",
+  "System adds items to cart",
+  "User proceeds to checkout",
+  "System requests shipping information",
+  "User enters shipping information",
+  "System presents payment methods",
+  "User selects payment method",
+  "User confirms purchase",
+  "System processes payment with Payment Gateway",
+  "Payment failed",
+  "System informs user about payment failure",
+  "User tries another payment method or cancels"
+];
+
+// Continue this pattern for the rest of the test cases...
 Ensure that your test cases cover:
 1. The basic flow described in the use case
 2. All alternate flows mentioned in the use case
@@ -210,10 +307,11 @@ IMPORTANT:
 - Do not include any additional explanations or comments outside of the function definitions and the initial description comment.
 - Adapt your test cases to the specific structure and logic of the provided code and use case.
 - Each test case should be designed to test a specific flow through the simulation as described in the use case.
-- These cases basically need to be different choices taken at different switch cases or if/else`;
+- These cases basically need to be different choices taken at different switch cases or if/else
+- Make sure that the expected output is exactly the same words and capitilization as the console.log statements in the code.`;
 
   try {
-    const msg = await anthropic.messages.create({
+    const msg = await callAnthropicWithRetry(anthropic, {
       model: 'claude-3-5-sonnet-20240620',
       max_tokens: 2000,
       temperature: 0,
