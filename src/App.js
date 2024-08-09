@@ -366,7 +366,7 @@ export default function App() {
     let results = 'Test Results';
     const code = editor.getShape('shape:codebox').props.text;
     const testCases = editor.getShape('shape:testcasebox').props.text;
-
+  
     if (description.trim() === '' || description === 'Type here...') {
       editor.updateShapes([
         {
@@ -384,6 +384,7 @@ export default function App() {
           testCases: testCases,
         });
         results = response.data.completion || 'Test Results';
+        console.log('Test Results:', results); // Add this line for debugging
       } catch (error) {
         console.error('Error running test cases:', error);
         results = 'Error running test cases. Please try again.';
@@ -558,7 +559,7 @@ export default function App() {
           onClick={handleGenerateCodeClick}
           disabled={!apiKey}
         >
-          Generate Code
+          Generate JavaScript Code
         </button>
         <button
           style={{
