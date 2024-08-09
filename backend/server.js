@@ -334,14 +334,17 @@ IMPORTANT:
 app.post('/api/runtests', (req, res) => {
   const { code, testCases } = req.body;
 
-  // Log the received code and test cases for debugging
   console.log('Received code:', code);
   console.log('Received test cases:', testCases);
 
-  // We'll pass testCases directly to runCodeAndTests
-  const results = runCodeAndTests(code, testCases);
-
-  res.json({ completion: results });
+  try {
+    const results = runCodeAndTests(code, testCases);
+    console.log('Test results:', results); // Add this line for debugging
+    res.json({ completion: results });
+  } catch (error) {
+    console.error('Error running tests:', error);
+    res.status(500).json({ error: 'Failed to run tests', details: error.message });
+  }
 });
 
 app.listen(PORT, () => {
