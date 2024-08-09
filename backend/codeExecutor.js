@@ -1,67 +1,75 @@
-const { VM } = require('vm2');
+const vm = require('vm');
 
-const runCodeAndTests = (code, testCases) => {
+function runCodeAndTests(code, testCases) {
+  // Log received data for debugging purposes
+  console.log("Received code:", code);
+  console.log("Received testCases:", JSON.stringify(testCases, null, 2));
+
+  // Create a sandboxed context for running the code
+  // This includes a custom console.log function that captures output
+  const context = {
+    console: {
+      log: function(...args) {
+        this.output.push(args.join(' '));
+      },
+      output: []
+    }
+  };
+
+  // Create a VM context with our sandboxed environment
+  vm.createContext(context);
+
   let results = [];
 
-  const vm = new VM({
-    timeout: 5000,
-    sandbox: {
-      console: {
-        log: function(...args) {
-          if (!this.output) this.output = [];
-          this.output.push(args.join(' '));
-        }
-      },
-      output: [],
-    }
-  });
-
-  // Execute the main code to define the libraryBookSystem function
   try {
-    vm.run(code);
+    // Execute the main simulation code in the sandboxed context
+    vm.runInContext(code, context);
     results.push("Main code executed successfully");
+
+    // Extract the name of the simulation function from the provided code
+    const functionMatch = code.match(/function\s+(\w+)\s*\([^)]*\)\s*{/);
+    if (!functionMatch) {
+      throw new Error("No simulation function found in the provided code");
+    }
+    const simulationFunctionName = functionMatch[1];
+
+    // Verify that the extracted function name actually exists in the context
+    const isFunctionDefined = vm.runInContext(`typeof ${simulationFunctionName} === "function"`, context);
+    if (!isFunctionDefined) {
+      throw new Error(`${simulationFunctionName} function is not defined in the provided code`);
+    }
+
+    // Store the function name in the context for later use in test cases
+    context.simulationFunctionName = simulationFunctionName;
+
   } catch (error) {
-    results.push(`Error in main code: ${error.message}\nStack: ${error.stack}`);
-    return results.join('\n\n');
+    // If there's an error in the main code execution, return it immediately
+    return [`Error in main code: ${error.message}`];
   }
 
   // Execute each test case
-  const testCaseRegex = /function\s+testCase\d+\s*\(\)\s*{[\s\S]*?}\s*const\s+expectedOutput\d+\s*=\s*\[[\s\S]*?\];/g;
-  const testCaseMatches = testCases.match(testCaseRegex);
-
-  if (!testCaseMatches) {
-    results.push("No valid test cases found");
-    return results.join('\n\n');
-  }
-
-  testCaseMatches.forEach((testCase, index) => {
+  testCases.forEach(testCase => {
+    // Reset the output capture for each test case
+    context.console.output = [];
     try {
-      // Split the test case into the function and the expected output
-      const [testCaseFunction, expectedOutputArray] = testCase.split(/const\s+expectedOutput\d+\s*=\s*/);
-      const expectedOutput = eval(expectedOutputArray.trim());
-
-      // Run the test case
-      vm.sandbox.output = []; // Reset output for each test case
-      vm.run(testCaseFunction.trim());  // Run the test case function
-
-      const actualOutput = vm.sandbox.output;
-
-      // Compare actual output to expected output
-      const pass = JSON.stringify(actualOutput) === JSON.stringify(expectedOutput);
-
-      results.push(`Test ${index + 1}:
-Actual Output:
-${actualOutput.join('\n')}
-Expected Output:
-${expectedOutput.join('\n')}
-Result: ${pass ? "PASS" : "FAIL"}`);
-
+      // Run the simulation function with the test case's scenario
+      vm.runInContext(`${context.simulationFunctionName}("${testCase.scenario}")`, context);
+      const actualOutput = context.console.output;
+      // Compare the actual output with the expected output
+      const passed = JSON.stringify(actualOutput) === JSON.stringify(testCase.expectedOutput);
+      
+      // Format the results, including full output comparison if the test failed
+      results.push(`Test: ${testCase.name}
+Result: ${passed ? 'PASS' : 'FAIL'}
+${passed ? '' : `Expected:\n${testCase.expectedOutput.join('\n')}\n\nActual:\n${actualOutput.join('\n')}`}`);
     } catch (error) {
-      results.push(`Test ${index + 1}: Failed - ${error.message}\nStack: ${error.stack}`);
+      // If there's an error running the test case, include it in the results
+      results.push(`Test: ${testCase.name}\nError: ${error.message}`);
     }
   });
 
-  return results.join('\n\n');
-};
+  // Return all test results
+  return results;
+}
 
 module.exports = runCodeAndTests;
