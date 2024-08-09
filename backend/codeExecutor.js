@@ -1,59 +1,63 @@
 const { VM } = require('vm2');
 
 const runCodeAndTests = (code, testCases) => {
-  console.log("Received code:", code);
-  console.log("Received test cases:", testCases);
-
   let results = [];
 
   const vm = new VM({
     timeout: 5000,
     sandbox: {
       console: {
-        log: (...args) => {
-          vm.output.push(args.join(' '));
+        log: function(...args) {
+          if (!this.output) this.output = [];
+          this.output.push(args.join(' '));
         }
       },
       output: [],
     }
   });
 
-  // Execute main code
+  // Execute the main code to define the libraryBookSystem function
   try {
-    console.log("Executing main code");
     vm.run(code);
     results.push("Main code executed successfully");
   } catch (error) {
     results.push(`Error in main code: ${error.message}\nStack: ${error.stack}`);
-    console.error("Error in main code:", error);
+    return results.join('\n\n');
   }
 
-  // Execute test cases
-  testCases.split('\n\n').forEach((testCase, index) => {
+  // Execute each test case
+  const testCaseRegex = /function\s+testCase\d+\s*\(\)\s*{[\s\S]*?}\s*const\s+expectedOutput\d+\s*=\s*\[[\s\S]*?\];/g;
+  const testCaseMatches = testCases.match(testCaseRegex);
+
+  if (!testCaseMatches) {
+    results.push("No valid test cases found");
+    return results.join('\n\n');
+  }
+
+  testCaseMatches.forEach((testCase, index) => {
     try {
-      console.log(`Executing test case ${index + 1}`);
-      vm.output = []; // Reset output for each test case
-      
-      // Extract expected output from test case
-      const expectedOutputMatch = testCase.match(/const expectedOutput\d+ = \[([\s\S]*?)\];/);
-      const expectedOutput = expectedOutputMatch 
-        ? JSON.parse(`[${expectedOutputMatch[1]}]`) 
-        : [];
+      // Split the test case into the function and the expected output
+      const [testCaseFunction, expectedOutputArray] = testCase.split(/const\s+expectedOutput\d+\s*=\s*/);
+      const expectedOutput = eval(expectedOutputArray.trim());
 
-      vm.run(testCase);
-      const actualOutput = vm.output;
+      // Run the test case
+      vm.sandbox.output = []; // Reset output for each test case
+      vm.run(testCaseFunction.trim());  // Run the test case function
 
-      // Compare expected and actual output
-      const passed = JSON.stringify(expectedOutput) === JSON.stringify(actualOutput);
+      const actualOutput = vm.sandbox.output;
 
-      results.push(`Test ${index + 1}: ${passed ? 'Passed' : 'Failed'}
-Expected Output: ${expectedOutput.join(', ')}
-Actual Output: ${actualOutput.join(', ')}
-${passed ? '' : 'Test failed: outputs do not match'}`);
+      // Compare actual output to expected output
+      const pass = JSON.stringify(actualOutput) === JSON.stringify(expectedOutput);
+
+      results.push(`Test ${index + 1}:
+Actual Output:
+${actualOutput.join('\n')}
+Expected Output:
+${expectedOutput.join('\n')}
+Result: ${pass ? "PASS" : "FAIL"}`);
 
     } catch (error) {
       results.push(`Test ${index + 1}: Failed - ${error.message}\nStack: ${error.stack}`);
-      console.error(`Error in test case ${index + 1}:`, error);
     }
   });
 
