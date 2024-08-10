@@ -1,77 +1,29 @@
+# Welcome
+I’ve built a web application designed specifically for Product Managers who want to streamline the process of creating effective use cases. My app takes a high-level description and transforms it into a detailed specification, a flowchart, and even an executable flow that you can validate by simulating different test scenarios. This tool is all about making it easier to gather feedback from business users and refine your product’s requirements with confidence.
+
 # Getting Started With the App
+****1. Clone the Repository:** Begin by cloning this repository into your VSCode environment.
+**2. Open a New Terminal:** In VSCode, open a new terminal and split it into two.
+**3. Set Up the Backend:**
+- In one terminal, navigate to the backend directory with cd backend.
+- Run npm install to install the necessary dependencies.
+- Install the vm2 package by typing npm install vm2.
+- Start the backend server by executing node server.js.
+**4. Set Up the Frontend:**
+- In the second terminal (tldrawapp), run npm install to set up the frontend dependencies.
+- Install the file-saver package with npm install file-saver.
+- Start the frontend by typing npm start.
 
-1. Clone this repository in VsCode
-2. Go to new terminal and split the terminal
-3. In one terminal change the directory to the backend (cd backend)
-4. Keep tldrawapp terminal how it is
-5. In backend terminal, type npm install, install vm2 (npm install vm2) then type node server.js to start the server
-6. In the tldrawapp terminal, type npm install, then type npm start
-7. You can now use the app
-.....Dont worry about the unfunded packages for now....
+**You’re All Set! The app is now ready to use.**
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+# Main Features:
+1. Generate an extensive Use Case Description
+2. Generate a diagram in Mermaid Markdown representing the Use Case
+3. Generate JavaScript Code representing the Use Case
+4. Generate Test Cases for the JavaScript Code
+5. Run the Test Cases on the JavaScript Code
+- 
+# Extra Features:
+1. Save and Open .tldr files
+2. Change Colors of Shapes and Text
+3. Resize Shapes and Dynamically Move Them Around the Canvas
