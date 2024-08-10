@@ -176,7 +176,7 @@ Please adhere to the following guidelines:
 
 Make sure to generate the entire full code and ensure it is easy to follow. This is crucial. Don't include the intro or end stuff just the code. Just the code. 
 This is an example of what the code should look like. Should be structured like this. MAKE SURE THAT THE INDENTATIONS
-ARE CLEAR AND OBVIOUS SO WHEN THE TEST CASES RUN THEY CAN RUN PROPERLY.:
+ARE CLEAR AND OBVIOUS SO WHEN THE TEST CASES RUN THEY CAN RUN PROPERLY. MAKE SURE EVERY SINGLE POSSIBLE FLOW IS REPRESENTED:
 function librarySimulation(scenario) {
   console.log("User enters search criteria");
   console.log("Library System displays matching books");
@@ -264,7 +264,7 @@ ${useCaseDescription}
 Simulation Code:
 ${code}
 
-Generate as many test cases as possible that cover all the possible flows described in the use case description and code. in the following format:
+Generate as many test cases as possible that cover all the possible flows described in the use case description and code. in the following format. Make sure they are accurate representations of the code:
 
 // Test case for scenario name
 function testCaseN() {
