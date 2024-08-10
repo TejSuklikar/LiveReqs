@@ -30,7 +30,7 @@ I’ve built a web application designed specifically for Product Managers who wa
 3. Generate JavaScript Code representing the Use Case
 4. Generate Test Cases for the JavaScript Code
 5. Run the Test Cases on the JavaScript Code
-- 
+
 # Extra Features:
 1. Save and Open .tldr files
 2. Change Colors of Shapes and Text
