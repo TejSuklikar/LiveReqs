@@ -2,16 +2,24 @@
 I’ve built a web application designed specifically for Product Managers who want to streamline the process of creating effective use cases. My app takes a high-level description and transforms it into a detailed specification, a flowchart, and even an executable flow that you can validate by simulating different test scenarios. This tool is all about making it easier to gather feedback from business users and refine your product’s requirements with confidence.
 
 # Getting Started With the App
-****1. Clone the Repository:** Begin by cloning this repository into your VSCode environment.
+**1. Clone the Repository:** Begin by cloning this repository into your VSCode environment.
+
 **2. Open a New Terminal:** In VSCode, open a new terminal and split it into two.
+
 **3. Set Up the Backend:**
 - In one terminal, navigate to the backend directory with cd backend.
+  
 - Run npm install to install the necessary dependencies.
+  
 - Install the vm2 package by typing npm install vm2.
+  
 - Start the backend server by executing node server.js.
+  
 **4. Set Up the Frontend:**
 - In the second terminal (tldrawapp), run npm install to set up the frontend dependencies.
+  
 - Install the file-saver package with npm install file-saver.
+  
 - Start the frontend by typing npm start.
 
 **You’re All Set! The app is now ready to use.**
