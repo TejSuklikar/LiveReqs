@@ -9,6 +9,7 @@ export default function App() {
   const [editor, setEditor] = useState(null);
   // State to hold the description input by the user
   const [description, setDescription] = useState('');
+  const [fileLoaded, setFileLoaded] = useState(false);
   // States to control the visibility of different boxes
   const [showUseCaseBox, setShowUseCaseBox] = useState(false);
   const [showDiagramBox, setShowDiagramBox] = useState(false);
@@ -575,29 +576,89 @@ const handleOpen = () => {
   input.type = 'file';
   input.accept = '.tldr';
   input.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-          try {
-              const content = event.target.result;
-              const snapshot = JSON.parse(content);
+    const file = e.target.files[0];
+    if (!file) return;
 
-              if (editor && editor.store) {
-                  // Use the built-in method to load the snapshot without custom validation
-                  editor.store.loadSnapshot(snapshot);
-              }
-          } catch (error) {
-              console.error('Error loading snapshot:', error);
-              alert('An error occurred while loading the file. Please check the console for details.');
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const content = event.target.result;
+        let snapshot = JSON.parse(content);
+
+        // Normalize the snapshot structure
+        if (!snapshot.store) {
+          snapshot = {
+            store: snapshot,
+            schema: {
+              schemaVersion: snapshot.schemaVersion || 1,
+              storeVersion: 1,
+              recordVersions: {
+                asset: { version: 1, subTypeKey: 'type', subTypeVersions: {} },
+                camera: { version: 1 },
+                document: { version: 2 },
+                instance: { version: 21 },
+                page: { version: 1 },
+                shape: { version: 3, subTypeKey: 'type', subTypeVersions: {} },
+                instance_page_state: { version: 5 },
+                pointer: { version: 1 },
+              },
+            },
+          };
+        }
+
+        // Ensure all records in the store have a valid typeName
+        const validTypes = ['asset', 'camera', 'document', 'instance', 'page', 'shape', 'instance_page_state', 'pointer'];
+        for (const [key, value] of Object.entries(snapshot.store)) {
+          if (!value.typeName || !validTypes.includes(value.typeName)) {
+            const inferredType = key.split(':')[0];
+            if (validTypes.includes(inferredType)) {
+              value.typeName = inferredType;
+            } else {
+              delete snapshot.store[key];
+            }
           }
-      };
-      reader.readAsText(file);
+        }
+
+        // Ensure essential records exist
+        if (!snapshot.store['document:document']) {
+          snapshot.store['document:document'] = { id: 'document:document', typeName: 'document', gridSize: 10 };
+        }
+        if (!snapshot.store['page:page']) {
+          snapshot.store['page:page'] = { id: 'page:page', typeName: 'page', name: 'Page 1', index: 'a1' };
+        }
+
+        if (editor && editor.store) {
+          editor.store.loadSnapshot(snapshot);
+
+          if (isEditorReady()) {
+            try {
+              editor.updateViewportScreenBounds();
+            } catch (error) {
+              console.warn('Error updating viewport:', error);
+              setNotification('Warning: There was an issue updating the viewport. Please check your layout.');
+            }
+          }
+
+          // No notification for compatibility modifications
+          setNotification(null); // Clear any previous notifications
+        } else {
+          console.error('Editor or editor.store is not available');
+          setNotification('Error: Editor is not initialized. Please try reloading the page.');
+        }
+      } catch (error) {
+        console.error('Error loading snapshot:', error);
+        setNotification(`An error occurred while loading the file: ${error.message}`);
+      }
+    };
+    reader.readAsText(file);
   };
   input.click();
 };
 
+// Helper function to check if the editor is fully initialized
+const isEditorReady = () => {
+  return editor && editor.store && editor.getViewportScreenBounds();
+};
 
 const handleFileChange = (event) => {
   const file = event.target.files[0];
@@ -638,7 +699,7 @@ const validateSnapshot = (json) => {
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
       {/* The main container that occupies the entire viewport */}
-      <Tldraw onMount={onMount} />
+      <Tldraw key={fileLoaded} onMount={onMount} />
       {/* Hidden file input for opening .tldr files */}
       <input
         type="file"
