@@ -69,7 +69,7 @@ app.post('/api/usecase', async (req, res) => {
   Make sure it follows exactly this format. You can make reasonable assumptions where it seems fit to do but make sure to ask the user if everything looks good before proceeding as the user may need to tweak assumptions. And make sure all possible alternate flows are created. Every single kind of alternate flow should be there. Also make sure for alternate flows that it branches off from correct steps as it can be costly if incorrect. And make sure that every flow is logical and makes sense. Don't just go based off efficiency necessarily, make sure it has logical and realistic flow. Only 
   provide the use case stuff. The beginning where you describe what the format is or whatever and the end where you ask if everything looks good should not be included. So nothing
   like this: Based on the provided description, I've created a detailed use case. Please review it and let me know if any adjustments are needed. And nothing like this: Does this use case accurately represent the scenario you described? Are there any assumptions or details you'd like to modify or add? Also these must be actual scenarios and must be able to turn into a use case. Must be logical and make sense. Code and diagrams are valid. If it doesn't make sense or is not logical, it will be rejected. Say "Not a valid text description". If it is code that is valid and you should do the same
-  thing and just explain the code in english in the same template. 
+  thing and just explain the code in english in the same template. Make as many alternate flows as possible. Be very thorough. 
   
   ${description}`; // Append the user's description to the prompt
 
@@ -105,7 +105,8 @@ app.post('/api/diagram', async (req, res) => {
   // Define the prompt to be sent to the Anthropic API, requesting the generation of Mermaid markdown
   const prompt = `Generate the mermaid markdown for the use case that was just created. Also feel
   free to reference the description. Only provide the mermaid markdown, without any additional explanations or comments.
-  The mermaid markdown should accurately represent all flows and scenarios described in the use case, including alternate flows.
+  The mermaid markdown should accurately represent all flows and scenarios described in the use case, including alternate flows. Every single flow should be represented. Even if they aren't
+  in the use case description and they are neccesary still add them. Be very thorough. 
 
 Description: ${description}
 Use Case Description: ${useCaseDescription}`; // Include both the description and the detailed use case in the prompt
@@ -148,7 +149,10 @@ app.post('/api/code', async (req, res) => {
         model: 'claude-3-5-sonnet-20240620', // Specify the model to use
         max_tokens: 2000, // Limit the number of tokens in the response
         temperature: 0, // Set temperature for deterministic output
-        system: `Generate the mermaid markdown for the following use case. Only provide the mermaid markdown, without any additional explanations or comments.`,
+        system: `Generate the mermaid markdown for the use case that was just created. Also feel
+  free to reference the description. Only provide the mermaid markdown, without any additional explanations or comments.
+  The mermaid markdown should accurately represent all flows and scenarios described in the use case, including alternate flows. Every single flow should be represented. Even if they aren't
+  in the use case description and they are neccesary still add them. Be very thorough.`,
         messages: [
           {
             role: 'user',
@@ -173,6 +177,7 @@ Please adhere to the following guidelines:
 - Use console.log statements to output key actions and decisions at each step.
 - The final output should contain only the JavaScript code—no introductory or concluding text.
 - No other additional things like math.random and stuff like that. Simple code so the test cases can run properly.
+- Make sure every single part of the mermaid code is in the javascript code don't miss anything. Be thorough.
 
 Make sure to generate the entire full code and ensure it is easy to follow. This is crucial. Don't include the intro or end stuff just the code. Just the code. 
 This is an example of what the code should look like. Should be structured like this. MAKE SURE THAT THE INDENTATIONS
@@ -222,7 +227,8 @@ function librarySimulation(scenario) {
   } else {
     console.log("Invalid scenario");
   }
-} MAKE SURE THE CODE HAS ZERO ERRORS AND IS EASY TO FOLLOW. MAKE SURE THE INDENTATIONS ARE CLEAR AND OBVIOUS SO WHEN THE TEST CASES RUN THEY CAN RUN PROPERLY.
+} MAKE SURE THE CODE HAS ZERO ERRORS AND IS EASY TO FOLLOW. MAKE SURE THE INDENTATIONS ARE CLEAR AND OBVIOUS SO WHEN THE TEST CASES RUN THEY CAN RUN PROPERLY. Needs to be long and cover every possible flow. Should always end with an else statement. Usually like some sort of all else goes wrong. Make sure the indentations are clear. 
+ This code needs to be good and clear. Make sure it is easy to follow and understand.
 Mermaid Markdown:
 ${markdownToUse}`;
 
@@ -236,7 +242,7 @@ ${markdownToUse}`;
       messages: [
         {
           role: 'user',
-          content: `Convert the mermaid markdown to JavaScript code.`, // Provide a simple instruction as the content for the user message
+          content: prompt, // Provide a simple instruction as the content for the user message
         },
       ],
     });
@@ -264,7 +270,7 @@ ${useCaseDescription}
 Simulation Code:
 ${code}
 
-Generate as many test cases as possible that cover all the possible flows described in the use case description and code. in the following format. Make sure they are accurate representations of the code:
+Generate as many test cases as possible that cover all the possible flows described in the use case description and code. I want a minimum of 20 test cases for each time. Feel free to do more than 20 as well.  in the following format:
 
 // Test case for scenario name
 function testCaseN() {
@@ -325,7 +331,7 @@ function simulationFunction(scenario) {
       messages: [
         {
           role: 'user',
-          content: `Generate test cases for the given use case and simulation code.`, // Provide a simple instruction as the content for the user message
+          content: prompt, // Provide a simple instruction as the content for the user message
         },
       ],
     });
