@@ -20,6 +20,11 @@ export default function App() {
   const [notification, setNotification] = useState(null);
   // State to hold the API key entered by the user
   const [apiKey, setApiKey] = useState('');
+  const [isUseCaseLoading, setIsUseCaseLoading] = useState(false);
+  const [isDiagramLoading, setIsDiagramLoading] = useState(false);
+  const [isCodeLoading, setIsCodeLoading] = useState(false);
+  const [isTestCasesLoading, setIsTestCasesLoading] = useState(false);
+  const [isResultsLoading, setIsResultsLoading] = useState(false);
 
   const onMount = (editor) => {
     // Save the editor instance to state
@@ -72,7 +77,58 @@ export default function App() {
   };
   
   const handleGoClick = async () => {
-    let useCaseDescription = 'Use Case Description'; // Default use case description
+    setIsUseCaseLoading(true);
+    let useCaseDescription = 'Use Case Description Generating...'; // Initial loading message
+  
+    const shapeExists = (shapeId) => editor.getShape(shapeId) !== undefined;
+  
+    // Always create or update the use case box
+    if (!shapeExists('shape:usecasebox')) {
+      editor.createShapes([
+        {
+          id: 'shape:usecasebox',
+          type: 'geo',
+          x: 500,
+          y: 100,
+          props: {
+            w: 700,
+            h: 600,
+            geo: 'rectangle',
+            color: 'black',
+            fill: 'none',
+            dash: 'draw',
+            size: 'm',
+            font: 'draw',
+            text: useCaseDescription,
+            align: 'middle',
+            verticalAlign: 'middle',
+          },
+        },
+        {
+          id: 'shape:usecaselabel',
+          type: 'text',
+          x: 500,
+          y: 50,
+          props: {
+            text: 'Use Case',
+            size: 'l',
+            font: 'draw',
+            color: 'black',
+          },
+        },
+      ]);
+      setShowUseCaseBox(true);
+    } else {
+      editor.updateShapes([
+        {
+          id: 'shape:usecasebox',
+          type: 'geo',
+          props: {
+            text: useCaseDescription,
+          },
+        },
+      ]);
+    }
   
     // Check if the description is empty or the default text
     if (description.trim() === '' || description === 'Type here...') {
@@ -86,6 +142,7 @@ export default function App() {
           },
         },
       ]);
+      useCaseDescription = 'Please enter a description.';
     } else {
       try {
         // Send the description to the backend to generate a use case description
@@ -102,322 +159,77 @@ export default function App() {
       }
     }
   
-    // Check if the use case box is already shown
-    if (!showUseCaseBox) {
-      // Create the use case description box on the canvas if it's not already there
-      editor.createShapes([
-        {
-          id: 'shape:usecasebox', // Unique ID for the use case box
-          type: 'geo', // Type of shape (geometric shape)
-          x: 500, // X position on the canvas
-          y: 100, // Y position on the canvas
-          props: {
-            w: 700, // Width of the shape
-            h: 600, // Height of the shape
-            geo: 'rectangle', // Shape type (rectangle)
-            color: 'black', // Border color
-            fill: 'none', // Fill color (none)
-            dash: 'draw', // Border style (dashed)
-            size: 'm', // Border size (medium)
-            font: 'draw', // Font style for text
-            text: useCaseDescription, // Use case description text
-            align: 'start', // Horizontal text alignment (start/left)
-            verticalAlign: 'start', // Vertical text alignment (start/top)
-          },
-        },
-        {
-          id: 'shape:usecaselabel', // Unique ID for the use case label
-          type: 'text', // Type of shape (text)
-          x: 500, // X position on the canvas
-          y: 50, // Y position on the canvas
-          props: {
-            text: 'Use Case', // Text content
-            size: 'l', // Text size (large)
-            font: 'draw', // Font style
-            color: 'black', // Text color
-          },
-        },
-      ]);
-      setShowUseCaseBox(true); // Update state to indicate the use case box is shown
-    } else {
-      // If the use case box already exists, update its content
+    // Update the use case box with the final content
+    if (shapeExists('shape:usecasebox')) {
       editor.updateShapes([
         {
-          id: 'shape:usecasebox', // ID of the use case box
-          type: 'geo', // Type of shape (geometric shape)
+          id: 'shape:usecasebox',
+          type: 'geo',
           props: {
-            text: useCaseDescription, // Update the text with the new use case description
+            text: useCaseDescription,
+            align: 'start',
+            verticalAlign: 'start',
           },
         },
       ]);
     }
+  
+    setIsUseCaseLoading(false);
   };
   
   const handleGenerateMermaidMarkdownClick = async () => {
-    let diagram = 'Mermaid Markdown'; // Default text for the Mermaid Markdown diagram
+    setIsDiagramLoading(true);
+    let diagram = 'Mermaid Markdown Generating...'; // Initial loading message
   
-    // Check if the description is empty or the default text
-    if (description.trim() === '' || description === 'Type here...') {
-      // If the description is empty, reset the shape text to 'Type here...'
-      editor.updateShapes([
-        {
-          id: 'shape:1', // The ID of the shape to update
-          type: 'geo', // Type of shape (geometric shape)
-          props: {
-            text: 'Type here...', // Update the text inside the shape
-          },
-        },
-      ]);
-    } else {
-      try {
-        // Retrieve the use case description from the editor
-        const useCaseDescription = editor.getShape('shape:usecasebox').props.text;
+    const shapeExists = (shapeId) => editor.getShape(shapeId) !== undefined;
   
-        // Send a request to the backend to generate Mermaid Markdown
-        const response = await axios.post('http://localhost:5001/api/diagram', {
-          description: description, // Current description entered by the user
-          useCaseDescription: useCaseDescription, // Use case description from the canvas
-          apiKey: apiKey, // API key for authentication
-        });
-  
-        // Update the diagram variable with the response or fallback to default text
-        diagram = response.data.completion || 'Mermaid Markdown';
-      } catch (error) {
-        console.error('Error generating Mermaid Markdown:', error);
-        // If there's an error, set the diagram to an error message
-        diagram = 'Error generating diagram. Please try again.';
-      }
-    }
-  
-    // Check if the diagram box is already displayed on the canvas
-    if (!showDiagramBox) {
-      // If not, create a new shape for the Mermaid Markdown diagram
+    // Always create or update the diagram box
+    if (!shapeExists('shape:markdownbox')) {
       editor.createShapes([
         {
-          id: 'shape:markdownbox', // Unique ID for the Markdown box
-          type: 'geo', // Type of shape (geometric shape)
-          x: 1300, // X position on the canvas
-          y: 100, // Y position on the canvas
+          id: 'shape:markdownbox',
+          type: 'geo',
+          x: 1300,
+          y: 100,
           props: {
-            w: 700, // Width of the shape
-            h: 600, // Height of the shape
-            geo: 'rectangle', // Shape type (rectangle)
-            color: 'black', // Border color
-            fill: 'none', // Fill color (none)
-            dash: 'draw', // Border style (dashed)
-            size: 'm', // Border size (medium)
-            font: 'draw', // Font style for text
-            text: diagram, // Text content (Mermaid Markdown diagram)
-            align: 'start', // Horizontal text alignment (start/left)
-            verticalAlign: 'start', // Vertical text alignment (start/top)
+            w: 700,
+            h: 600,
+            geo: 'rectangle',
+            color: 'black',
+            fill: 'none',
+            dash: 'draw',
+            size: 'm',
+            font: 'draw',
+            text: diagram,
+            align: 'middle',
+            verticalAlign: 'middle',
           },
         },
         {
-          id: 'shape:markdownlabel', // Unique ID for the Markdown label
-          type: 'text', // Type of shape (text)
-          x: 1300, // X position on the canvas
-          y: 50, // Y position on the canvas
+          id: 'shape:markdownlabel',
+          type: 'text',
+          x: 1300,
+          y: 50,
           props: {
-            text: 'Markdown', // Label text
-            size: 'l', // Text size (large)
-            font: 'draw', // Font style
-            color: 'black', // Text color
+            text: 'Markdown',
+            size: 'l',
+            font: 'draw',
+            color: 'black',
           },
         },
       ]);
-      setShowDiagramBox(true); // Update state to indicate the diagram box is displayed
+      setShowDiagramBox(true);
     } else {
-      // If the diagram box already exists, update its content
       editor.updateShapes([
         {
-          id: 'shape:markdownbox', // ID of the diagram box
-          type: 'geo', // Type of shape (geometric shape)
+          id: 'shape:markdownbox',
+          type: 'geo',
           props: {
-            text: diagram, // Update the text with the new Mermaid Markdown diagram
+            text: diagram,
           },
         },
       ]);
     }
-  };
-  
-  const handleGenerateCodeClick = async () => {
-    let code = 'JavaScript Code'; // Default text for the JavaScript code
-  
-    // Check if the description is empty or the default text
-    if (description.trim() === '' || description === 'Type here...') {
-      // If the description is empty, reset the shape text to 'Type here...'
-      editor.updateShapes([
-        {
-          id: 'shape:1', // The ID of the shape to update
-          type: 'geo', // Type of shape (geometric shape)
-          props: {
-            text: 'Type here...', // Update the text inside the shape
-          },
-        },
-      ]);
-    } else {
-      try {
-        // Retrieve the use case description from the editor
-        const useCaseDescription = editor.getShape('shape:usecasebox').props.text;
-  
-        // Send a request to the backend to generate JavaScript code
-        const response = await axios.post('http://localhost:5001/api/code', {
-          description: description, // Current description entered by the user
-          useCaseDescription: useCaseDescription, // Use case description from the canvas
-          apiKey: apiKey, // API key for authentication
-        });
-  
-        // Update the code variable with the response or fallback to default text
-        code = response.data.completion || 'JavaScript Code';
-      } catch (error) {
-        console.error('Error generating JavaScript code:', error);
-        // If there's an error, set the code to an error message
-        code = 'Error generating code. Please try again.';
-      }
-    }
-  
-    // Check if the code box is already displayed on the canvas
-    if (!showCodeBox) {
-      // If not, create a new shape for the JavaScript code
-      editor.createShapes([
-        {
-          id: 'shape:codebox', // Unique ID for the code box
-          type: 'geo', // Type of shape (geometric shape)
-          x: 2100, // X position on the canvas
-          y: 100, // Y position on the canvas
-          props: {
-            w: 700, // Width of the shape
-            h: 600, // Height of the shape
-            geo: 'rectangle', // Shape type (rectangle)
-            color: 'black', // Border color
-            fill: 'none', // Fill color (none)
-            dash: 'draw', // Border style (dashed)
-            size: 'm', // Border size (medium)
-            font: 'draw', // Font style for text
-            text: code, // Text content (JavaScript code)
-            align: 'start', // Horizontal text alignment (start/left)
-            verticalAlign: 'start', // Vertical text alignment (start/top)
-          },
-        },
-        {
-          id: 'shape:codelabel', // Unique ID for the code label
-          type: 'text', // Type of shape (text)
-          x: 2100, // X position on the canvas
-          y: 50, // Y position on the canvas
-          props: {
-            text: 'Code', // Label text
-            size: 'l', // Text size (large)
-            font: 'draw', // Font style
-            color: 'black', // Text color
-          },
-        },
-      ]);
-      setShowCodeBox(true); // Update state to indicate the code box is displayed
-    } else {
-      // If the code box already exists, update its content
-      editor.updateShapes([
-        {
-          id: 'shape:codebox', // ID of the code box
-          type: 'geo', // Type of shape (geometric shape)
-          props: {
-            text: code, // Update the text with the new JavaScript code
-          },
-        },
-      ]);
-    }
-  };
-  
-  const handleTestCasesClick = async () => {
-    let testCases = 'Test Cases'; // Default text for test cases
-  
-    // Check if the description is empty or the default text
-    if (description.trim() === '' || description === 'Type here...') {
-      // If the description is empty, reset the shape text to 'Type here...'
-      editor.updateShapes([
-        {
-          id: 'shape:1', // The ID of the shape to update
-          type: 'geo', // Type of shape (geometric shape)
-          props: {
-            text: 'Type here...', // Update the text inside the shape
-          },
-        },
-      ]);
-    } else {
-      try {
-        // Retrieve the generated code from the editor
-        const code = editor.getShape('shape:codebox').props.text;
-  
-        // Send a request to the backend to generate test cases based on the code and description
-        const response = await axios.post('http://localhost:5001/api/testcases', {
-          description: description, // Current description entered by the user
-          code: code, // JavaScript code from the canvas
-          apiKey: apiKey, // API key for authentication
-        });
-  
-        // Update the testCases variable with the response or fallback to default text
-        testCases = response.data.completion || 'Test Cases';
-      } catch (error) {
-        console.error('Error generating test cases:', error);
-        // If there's an error, set the testCases to an error message
-        testCases = 'Error generating test cases. Please try again.';
-      }
-    }
-  
-    // Check if the test cases box is already displayed on the canvas
-    if (!showTestCasesBox) {
-      // If not, create a new shape for the test cases
-      editor.createShapes([
-        {
-          id: 'shape:testcasebox', // Unique ID for the test case box
-          type: 'geo', // Type of shape (geometric shape)
-          x: 2900, // X position on the canvas
-          y: 100, // Y position on the canvas
-          props: {
-            w: 700, // Width of the shape
-            h: 600, // Height of the shape
-            geo: 'rectangle', // Shape type (rectangle)
-            color: 'black', // Border color
-            fill: 'none', // Fill color (none)
-            dash: 'draw', // Border style (dashed)
-            size: 'm', // Border size (medium)
-            font: 'draw', // Font style for text
-            text: testCases, // Text content (Test Cases)
-            align: 'start', // Horizontal text alignment (start/left)
-            verticalAlign: 'start', // Vertical text alignment (start/top)
-          },
-        },
-        {
-          id: 'shape:testcaselabel', // Unique ID for the test case label
-          type: 'text', // Type of shape (text)
-          x: 2900, // X position on the canvas
-          y: 50, // Y position on the canvas
-          props: {
-            text: 'Test Cases', // Label text
-            size: 'l', // Text size (large)
-            font: 'draw', // Font style
-            color: 'black', // Text color
-          },
-        },
-      ]);
-      setShowTestCasesBox(true); // Update state to indicate the test cases box is displayed
-    } else {
-      // If the test cases box already exists, update its content
-      editor.updateShapes([
-        {
-          id: 'shape:testcasebox', // ID of the test case box
-          type: 'geo', // Type of shape (geometric shape)
-          props: {
-            text: testCases, // Update the text with the new test cases
-          },
-        },
-      ]);
-    }
-  };
-  
-  const handleRunTestsClick = async () => {
-    let results = 'Test Results'; // Default text for test results
-    const code = editor.getShape('shape:codebox').props.text; // Get the code from the editor
-    const testCasesText = editor.getShape('shape:testcasebox').props.text; // Get the test cases from the editor
   
     // Check if the description is empty or the default text
     if (description.trim() === '' || description === 'Type here...') {
@@ -431,88 +243,388 @@ export default function App() {
           },
         },
       ]);
+      diagram = 'Please enter a description.';
     } else {
       try {
-        // Attempt to extract the function name from the provided code
-        const functionMatch = code.match(/function\s+(\w+)\s*\([^)]*\)\s*{/);
-        if (!functionMatch) {
-          throw new Error("No simulation function found in the provided code");
-        }
-        const simulationFunctionName = functionMatch[1]; // Extract the simulation function name
+        // Retrieve the use case description from the editor
+        const useCaseDescription = shapeExists('shape:usecasebox') 
+          ? editor.getShape('shape:usecasebox').props.text 
+          : 'Use case not available';
   
-        // Parse the test cases using the extracted function name
-        const testCases = parseTestCases(testCasesText, simulationFunctionName);
-  
-        // Log the code and test cases for debugging purposes
-        console.log('Sending code:', code);
-        console.log('Sending test cases:', testCases);
-  
-        // Send the code and parsed test cases to the backend for execution
-        const response = await axios.post('http://localhost:5001/api/runtests', {
-          code: code,
-          testCases: testCases,
+        // Send a request to the backend to generate Mermaid Markdown
+        const response = await axios.post('http://localhost:5001/api/diagram', {
+          description: description,
+          useCaseDescription: useCaseDescription,
+          apiKey: apiKey,
         });
   
-        // Update the results with the output from the backend
-        results = response.data.results ? response.data.results.join('\n\n') : 'Test Results';
-        console.log('Test Results:', results);
+        // Update the diagram variable with the response or fallback to default text
+        diagram = response.data.completion || 'Mermaid Markdown';
       } catch (error) {
-        console.error('Error running test cases:', error);
-        results = 'Error running test cases. Please try again.';
+        console.error('Error generating Mermaid Markdown:', error);
+        // If there's an error, set the diagram to an error message
+        diagram = 'Error generating diagram. Please try again.';
       }
     }
   
-    // Update the results box on the canvas
-    if (!showResultsBox) {
-      // If the results box is not yet displayed, create a new shape for it
-      editor.createShapes([
+    // Update the diagram box with the final content
+    if (shapeExists('shape:markdownbox')) {
+      editor.updateShapes([
         {
-          id: 'shape:resultsbox',
+          id: 'shape:markdownbox',
           type: 'geo',
-          x: 3700,
-          y: 100,
           props: {
-            w: 700,
-            h: 600,
-            geo: 'rectangle',
-            color: 'black',
-            fill: 'none',
-            dash: 'draw',
-            size: 'm',
-            font: 'draw',
-            text: results,
+            text: diagram,
             align: 'start',
             verticalAlign: 'start',
           },
         },
-        {
-          id: 'shape:resultslabel',
-          type: 'text',
-          x: 3700,
-          y: 50,
-          props: {
-            text: 'Test Results',
-            size: 'l',
-            font: 'draw',
-            color: 'black',
-          },
-        },
-      ]);
-      setShowResultsBox(true); // Indicate that the results box is now displayed
-    } else {
-      // If the results box already exists, update its content
-      editor.updateShapes([
-        {
-          id: 'shape:resultsbox',
-          type: 'geo',
-          props: {
-            text: results,
-          },
-        },
       ]);
     }
-  };
   
+    setIsDiagramLoading(false);
+  };
+
+  const handleGenerateCodeClick = async () => {
+  setIsCodeLoading(true);
+  let code = 'Code is Generating...'; // Initial loading message
+
+  const shapeExists = (shapeId) => editor.getShape(shapeId) !== undefined;
+
+  // Always create or update the code box
+  if (!shapeExists('shape:codebox')) {
+    editor.createShapes([
+      {
+        id: 'shape:codebox',
+        type: 'geo',
+        x: 2100,
+        y: 100,
+        props: {
+          w: 700,
+          h: 600,
+          geo: 'rectangle',
+          color: 'black',
+          fill: 'none',
+          dash: 'draw',
+          size: 'm',
+          font: 'draw',
+          text: code,
+          align: 'middle',
+          verticalAlign: 'middle',
+        },
+      },
+      {
+        id: 'shape:codelabel',
+        type: 'text',
+        x: 2100,
+        y: 50,
+        props: {
+          text: 'Code',
+          size: 'l',
+          font: 'draw',
+          color: 'black',
+        },
+      },
+    ]);
+    setShowCodeBox(true);
+  } else {
+    editor.updateShapes([
+      {
+        id: 'shape:codebox',
+        type: 'geo',
+        props: {
+          text: code,
+        },
+      },
+    ]);
+  }
+
+  // Check if the description is empty or the default text
+  if (description.trim() === '' || description === 'Type here...') {
+    // If the description is empty, reset the shape text to 'Type here...'
+    editor.updateShapes([
+      {
+        id: 'shape:1',
+        type: 'geo',
+        props: {
+          text: 'Type here...',
+        },
+      },
+    ]);
+    code = 'Please enter a description.';
+  } else {
+    try {
+      // Retrieve the use case description from the editor
+      const useCaseDescription = shapeExists('shape:usecasebox')
+        ? editor.getShape('shape:usecasebox').props.text
+        : 'Use case not available';
+
+      // Send a request to the backend to generate JavaScript code
+      const response = await axios.post('http://localhost:5001/api/code', {
+        description: description,
+        useCaseDescription: useCaseDescription,
+        apiKey: apiKey,
+      });
+
+      // Update the code variable with the response or fallback to default text
+      code = response.data.completion || 'JavaScript Code';
+    } catch (error) {
+      console.error('Error generating JavaScript code:', error);
+      // If there's an error, set the code to an error message
+      code = 'Error generating code. Please try again.';
+    }
+  }
+
+  // Update the code box with the final content
+  if (shapeExists('shape:codebox')) {
+    editor.updateShapes([
+      {
+        id: 'shape:codebox',
+        type: 'geo',
+        props: {
+          text: code,
+          align: 'start',
+          verticalAlign: 'start',
+        },
+      },
+    ]);
+  }
+
+  setIsCodeLoading(false);
+};
+  
+const handleTestCasesClick = async () => {
+  setIsTestCasesLoading(true);
+  let testCases = 'Test Cases Are Generating...'; // Initial loading message
+
+  const shapeExists = (shapeId) => editor.getShape(shapeId) !== undefined;
+
+  // Always create or update the test cases box
+  if (!shapeExists('shape:testcasebox')) {
+    editor.createShapes([
+      {
+        id: 'shape:testcasebox',
+        type: 'geo',
+        x: 2900,
+        y: 100,
+        props: {
+          w: 700,
+          h: 600,
+          geo: 'rectangle',
+          color: 'black',
+          fill: 'none',
+          dash: 'draw',
+          size: 'm',
+          font: 'draw',
+          text: testCases,
+          align: 'middle',
+          verticalAlign: 'middle',
+        },
+      },
+      {
+        id: 'shape:testcaselabel',
+        type: 'text',
+        x: 2900,
+        y: 50,
+        props: {
+          text: 'Test Cases',
+          size: 'l',
+          font: 'draw',
+          color: 'black',
+        },
+      },
+    ]);
+    setShowTestCasesBox(true);
+  } else {
+    editor.updateShapes([
+      {
+        id: 'shape:testcasebox',
+        type: 'geo',
+        props: {
+          text: testCases,
+        },
+      },
+    ]);
+  }
+
+  // Check if the description is empty or the default text
+  if (description.trim() === '' || description === 'Type here...') {
+    // If the description is empty, reset the shape text to 'Type here...'
+    editor.updateShapes([
+      {
+        id: 'shape:1',
+        type: 'geo',
+        props: {
+          text: 'Type here...',
+        },
+      },
+    ]);
+    testCases = 'Please enter a description.';
+  } else {
+    try {
+      // Retrieve the generated code from the editor
+      const code = shapeExists('shape:codebox')
+        ? editor.getShape('shape:codebox').props.text
+        : 'Code not available';
+
+      // Send a request to the backend to generate test cases based on the code and description
+      const response = await axios.post('http://localhost:5001/api/testcases', {
+        description: description,
+        code: code,
+        apiKey: apiKey,
+      });
+
+      // Update the testCases variable with the response or fallback to default text
+      testCases = response.data.completion || 'Test Cases';
+    } catch (error) {
+      console.error('Error generating test cases:', error);
+      // If there's an error, set the testCases to an error message
+      testCases = 'Error generating test cases. Please try again.';
+    }
+  }
+
+  // Update the test cases box with the final content
+  if (shapeExists('shape:testcasebox')) {
+    editor.updateShapes([
+      {
+        id: 'shape:testcasebox',
+        type: 'geo',
+        props: {
+          text: testCases,
+          align: 'start',
+          verticalAlign: 'start',
+        },
+      },
+    ]);
+  }
+
+  setIsTestCasesLoading(false);
+};
+
+  
+  const handleRunTestsClick = async () => {
+  setIsResultsLoading(true);
+  let results = 'Running Tests...'; // Initial loading message
+
+  const shapeExists = (shapeId) => editor.getShape(shapeId) !== undefined;
+
+  // Always create or update the results box
+  if (!shapeExists('shape:resultsbox')) {
+    editor.createShapes([
+      {
+        id: 'shape:resultsbox',
+        type: 'geo',
+        x: 3700,
+        y: 100,
+        props: {
+          w: 700,
+          h: 600,
+          geo: 'rectangle',
+          color: 'black',
+          fill: 'none',
+          dash: 'draw',
+          size: 'm',
+          font: 'draw',
+          text: results,
+          align: 'middle',
+          verticalAlign: 'middle',
+        },
+      },
+      {
+        id: 'shape:resultslabel',
+        type: 'text',
+        x: 3700,
+        y: 50,
+        props: {
+          text: 'Test Results',
+          size: 'l',
+          font: 'draw',
+          color: 'black',
+        },
+      },
+    ]);
+    setShowResultsBox(true);
+  } else {
+    editor.updateShapes([
+      {
+        id: 'shape:resultsbox',
+        type: 'geo',
+        props: {
+          text: results,
+        },
+      },
+    ]);
+  }
+
+  // Check if the description is empty or the default text
+  if (description.trim() === '' || description === 'Type here...') {
+    // If the description is empty, reset the shape text to 'Type here...'
+    editor.updateShapes([
+      {
+        id: 'shape:1',
+        type: 'geo',
+        props: {
+          text: 'Type here...',
+        },
+      },
+    ]);
+    results = 'Please enter a description and generate code and test cases first.';
+  } else {
+    try {
+      // Get the code and test cases from the editor, if they exist
+      const code = shapeExists('shape:codebox') ? editor.getShape('shape:codebox').props.text : '';
+      const testCasesText = shapeExists('shape:testcasebox') ? editor.getShape('shape:testcasebox').props.text : '';
+
+      if (!code || !testCasesText) {
+        throw new Error("Code or test cases are missing. Please generate them first.");
+      }
+
+      // Attempt to extract the function name from the provided code
+      const functionMatch = code.match(/function\s+(\w+)\s*\([^)]*\)\s*{/);
+      if (!functionMatch) {
+        throw new Error("No simulation function found in the provided code");
+      }
+      const simulationFunctionName = functionMatch[1]; // Extract the simulation function name
+
+      // Parse the test cases using the extracted function name
+      const testCases = parseTestCases(testCasesText, simulationFunctionName);
+
+      // Log the code and test cases for debugging purposes
+      console.log('Sending code:', code);
+      console.log('Sending test cases:', testCases);
+
+      // Send the code and parsed test cases to the backend for execution
+      const response = await axios.post('http://localhost:5001/api/runtests', {
+        code: code,
+        testCases: testCases,
+      });
+
+      // Update the results with the output from the backend
+      results = response.data.results ? response.data.results.join('\n\n') : 'Test Results';
+      console.log('Test Results:', results);
+    } catch (error) {
+      console.error('Error running test cases:', error);
+      results = `Error running test cases: ${error.message}`;
+    }
+  }
+
+  // Update the results box with the final content
+  if (shapeExists('shape:resultsbox')) {
+    editor.updateShapes([
+      {
+        id: 'shape:resultsbox',
+        type: 'geo',
+        props: {
+          text: results,
+          align: 'start',
+          verticalAlign: 'start',
+        },
+      },
+    ]);
+  }
+
+  setIsResultsLoading(false);
+};
   // Helper function to parse test cases
   function parseTestCases(testCasesText, simulationFunctionName) {
     const testCases = [];
@@ -540,36 +652,57 @@ export default function App() {
     return testCases; // Return the array of parsed test cases
   }  
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editor) {
-        // Serialize the editor state
-        let serializedData = editor.store.serialize();
+        try {
+            // Serialize the editor state
+            let serializedData = editor.store.serialize();
 
-        // Ensure the schema version is set
-        if (!serializedData.schemaVersion) {
-            serializedData.schemaVersion = 2; // Set to the appropriate version
-        }
-
-        // Wrap the serialized data under the 'store' key to match the required format
-        const wrappedData = {
-            store: serializedData,
-            schema: {
-                schemaVersion: serializedData.schemaVersion,
-                sequences: serializedData.sequences // Ensure sequences are properly included
+            // Ensure the schema version is set
+            if (!serializedData.schemaVersion) {
+                serializedData.schemaVersion = 2; // Set to the appropriate version
             }
-        };
 
-        // Convert the wrapped data to a JSON string
-        const blob = new Blob([JSON.stringify(wrappedData, null, 2)], { type: 'application/json' });
+            // Wrap the serialized data under the 'store' key to match the required format
+            const wrappedData = {
+                store: serializedData,
+                schema: {
+                    schemaVersion: serializedData.schemaVersion,
+                    sequences: serializedData.sequences // Ensure sequences are properly included
+                }
+            };
 
-        // Prompt the user to enter a filename
-        const filename = prompt('Enter filename to save:', 'usecase.tldr');
-        if (filename) {
-            // Save the file
-            saveAs(blob, filename);
+            // Convert the wrapped data to a JSON string
+            const fileContent = JSON.stringify(wrappedData, null, 2);
+
+            // Use the File System Access API to show a save file picker
+            const fileHandle = await window.showSaveFilePicker({
+                suggestedName: 'usecase.tldr',
+                types: [{
+                    description: 'TLDraw Files',
+                    accept: { 'application/json': ['.tldr'] },
+                }],
+            });
+
+            // Create a writable stream
+            const writableStream = await fileHandle.createWritable();
+            
+            // Write the file content to the selected location
+            await writableStream.write(fileContent);
+
+            // Close the writable stream to complete the save
+            await writableStream.close();
+
+            console.log('File saved successfully');
+        } catch (error) {
+            console.error('Error saving the file:', error);
         }
+    } else {
+        console.error('Editor is not initialized');
     }
 };
+
+
 
 const handleOpen = () => {
   const input = document.createElement('input');
@@ -869,4 +1002,5 @@ const validateSnapshot = (json) => {
       )}
     </div>
   );
+  
 }
