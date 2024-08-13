@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import '@tldraw/tldraw/tldraw.css';
 import axios from 'axios';
-import { saveAs } from 'file-saver';
 import {components} from './CustomComponents';
 import { Tldraw } from '@tldraw/tldraw';
-
 
 export default function App() {
   // State to hold the Tldraw editor instance
   const [editor, setEditor] = useState(null);
   // State to hold the description input by the user
   const [description, setDescription] = useState('');
-  const [fileLoaded, setFileLoaded] = useState(false);
   // States to control the visibility of different boxes
   const [showUseCaseBox, setShowUseCaseBox] = useState(false);
   const [showDiagramBox, setShowDiagramBox] = useState(false);
@@ -654,7 +651,6 @@ const handleTestCasesClick = async () => {
     return testCases; // Return the array of parsed test cases
   }  
 
-
 const handleFileChange = (event) => {
   const file = event.target.files[0];
   if (file) {
@@ -812,5 +808,4 @@ const handleFileChange = (event) => {
       )}
     </div>
   );
-  
 }
