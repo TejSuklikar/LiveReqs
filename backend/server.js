@@ -152,7 +152,7 @@ app.post('/api/code', async (req, res) => {
         system: `Generate the mermaid markdown for the use case that was just created. Also feel
   free to reference the description. Only provide the mermaid markdown, without any additional explanations or comments.
   The mermaid markdown should accurately represent all flows and scenarios described in the use case, including alternate flows. Every single flow should be represented. Even if they aren't
-  in the use case description and they are neccesary still add them. Be very thorough.`,
+  in the use case description and they are neccesary still add them. Be very thorough. EVERY SINGLE FLOW NEEDS TO BE THERE`,
         messages: [
           {
             role: 'user',
@@ -187,34 +187,8 @@ function librarySimulation(scenario) {
   console.log("Library System displays matching books");
   console.log("User selects desired book");
   console.log("Library System checks book availability");
-  if (scenario === "book_available" || scenario === "user_eligible" || scenario === "no_late_fees" || scenario === "late_fees" || scenario === "user_not_eligible") {
-    console.log("Book is available");
-    console.log("User requests to borrow");
-    console.log("Library System verifies user eligibility");
-    if (scenario === "user_eligible" || scenario === "no_late_fees" || scenario === "late_fees") {
-      console.log("User is eligible");
-      console.log("Library System marks book as borrowed");
-      console.log("Library System confirms borrowing");
-      console.log("User takes book");
-      console.log("Time passes");
-      console.log("User returns book");
-      console.log("Library System verifies book and checks for fees");
-      if (scenario === "no_late_fees") {
-        console.log("No late fees");
-        console.log("Library System marks book as returned");
-        console.log("Library System confirms return");
-      } else if (scenario === "late_fees") {
-        console.log("Late fees applied");
-        console.log("Library System informs of late fees");
-        console.log("User pays late fees");
-        console.log("Library System marks book as returned");
-        console.log("Library System confirms return");
-      }
-    } else if (scenario === "user_not_eligible") {
-      console.log("User is not eligible");
-      console.log("Library System informs of ineligibility");
-    }
-  } else if (scenario === "book_unavailable" || scenario === "user_requests_hold") {
+
+  if (scenario === "book_unavailable" || scenario === "user_requests_hold") {
     console.log("Book is not available");
     console.log("Library System informs book unavailable");
     console.log("Library System offers to place hold");
@@ -224,11 +198,50 @@ function librarySimulation(scenario) {
       console.log("Library System places hold on book");
       console.log("Library System confirms hold placement");
     }
-  } else {
-    console.log("Invalid scenario");
+    return;
   }
-} MAKE SURE THE CODE HAS ZERO ERRORS AND IS EASY TO FOLLOW. MAKE SURE THE INDENTATIONS ARE CLEAR AND OBVIOUS SO WHEN THE TEST CASES RUN THEY CAN RUN PROPERLY. Needs to be long and cover every possible flow. Should always end with an else statement. Usually like some sort of all else goes wrong. Make sure the indentations are clear. 
- This code needs to be good and clear. Make sure it is easy to follow and understand.
+
+  if (scenario === "invalid_scenario") {
+    console.log("Invalid scenario");
+    return;
+  }
+
+  console.log("Book is available");
+  console.log("User requests to borrow");
+  console.log("Library System verifies user eligibility");
+
+  if (scenario === "user_not_eligible") {
+    console.log("User is not eligible");
+    console.log("Library System informs of ineligibility");
+    return;
+  }
+
+  console.log("User is eligible");
+  console.log("Library System marks book as borrowed");
+  console.log("Library System confirms borrowing");
+  console.log("User takes book");
+  console.log("Time passes");
+  console.log("User returns book");
+  console.log("Library System verifies book and checks for fees");
+
+  if (scenario === "late_fees") {
+    console.log("Late fees applied");
+    console.log("Library System informs of late fees");
+    console.log("User pays late fees");
+  } else if (scenario === "no_late_fees") {
+    console.log("No late fees");
+  }
+
+  if (scenario !== "book_available" && scenario !== "user_eligible") {
+    console.log("Library System marks book as returned");
+    console.log("Library System confirms return");
+  }
+}
+MAKE SURE THE CODE HAS ZERO ERRORS AND IS EASY TO FOLLOW. MAKE SURE THE INDENTATIONS ARE CLEAR AND OBVIOUS SO WHEN THE TEST CASES RUN THEY CAN RUN PROPERLY. Needs to be long and cover every possible flow. Should always end with an else statement. Usually like some sort of all else goes wrong. Make sure the indentations are clear. 
+ This code needs to be good and clear. Make sure it is easy to follow and understand. It should be structured like this. MAKE SURE THAT THE INDENTATIONS are clear so that the test cases can follow them easily. Make sure the code is clear and easy to follow. Make sure every single part of the mermaid code is in the javascript code don't miss anything. Be thorough. THE ENTIRE CODE SHOULD SHOW. generate everything dont leave stuff blank or up to interpretation. Nothing like this:
+  console.log("User enters search criteria");
+    console.log("System displays search results");
+    // ... (same process as above for results found). SHOW ALL THE CODE
 Mermaid Markdown:
 ${markdownToUse}`;
 
@@ -236,7 +249,7 @@ ${markdownToUse}`;
     // Call the Anthropic API to convert the Mermaid markdown to JavaScript code
     const msg = await callAnthropicWithRetry(anthropic, {
       model: 'claude-3-5-sonnet-20240620', // Specify the model to use
-      max_tokens: 4000, // Set a higher token limit for generating the full code
+      max_tokens: 4096, // Set a higher token limit for generating the full code
       temperature: 0, // Set temperature for deterministic output
       system: prompt, // Use the prompt defined above as the system message
       messages: [
@@ -270,17 +283,7 @@ ${useCaseDescription}
 Simulation Code:
 ${code}
 
-Generate as many test cases as possible that cover all the possible flows described in the use case description and code. I want a minimum of 20 test cases for each time. Feel free to do more than 20 as well.  in the following format:
-
-// Test case for scenario name
-function testCaseN() {
-  eCommerceSimulation("scenario_name");
-}
-const expectedOutputN = [
-  "Expected output line 1",
-  "Expected output line 2",
-  // ...
-];
+Generate at least 20 cases that cover all the possible flows described in the use case description and code. I want a minimum of 20 test cases for each time. Feel free to do more than 20 as well.
 
 // Continue this pattern for the rest of the test cases...
 Ensure that your test cases cover:
@@ -296,29 +299,317 @@ IMPORTANT:
 - Each test case should be designed to test a specific flow through the simulation as described in the use case.
 - These cases basically need to be different choices taken at different switch cases or if/else
 - Make sure that the expected output is exactly the same words and capitalization as the console.log statements in the code.
-The code will be formatted like this so make sure these test cases when created perfectly match this structure
-function simulationFunction(scenario) {
-  console.log("Starting simulation");
-  switch (scenario) {
-    case "scenario_1":
-      console.log("Action 1");
-      console.log("Action 2");
-      console.log("End of scenario 1");
-      break;
-    case "scenario_2":
-      console.log("Action 3");
-      console.log("Action 4");
-      console.log("End of scenario 2");
-      break;
-    case "scenario_3":
-      console.log("Action 5");
-      console.log("Action 6");
-      console.log("End of scenario 3");
-      break;
-    default:
-      console.log("Invalid scenario");
-      break;
+ THEY NEED TO BE ABLE TO EASILY RUN IN THIS CODE. IT SHOULD ONLY CREATE TESTS THAT SIMULATE THINGS HAPPENING IN THIS CODE STRUCUTRE. MAKE SURE THE EXPECTED OUTPUTS ARE CORRECT. 
+
+ The code will be formatted like this:
+ function librarySimulation(scenario) {
+  console.log("User enters search criteria");
+  console.log("Library System displays matching books");
+  console.log("User selects desired book");
+  console.log("Library System checks book availability");
+
+  if (scenario === "book_unavailable" || scenario === "user_requests_hold") {
+    console.log("Book is not available");
+    console.log("Library System informs book unavailable");
+    console.log("Library System offers to place hold");
+    if (scenario === "user_requests_hold") {
+      console.log("User agrees to hold");
+      console.log("User requests hold");
+      console.log("Library System places hold on book");
+      console.log("Library System confirms hold placement");
+    }
+    return;
   }
+
+  if (scenario === "invalid_scenario") {
+    console.log("Invalid scenario");
+    return;
+  }
+
+  console.log("Book is available");
+  console.log("User requests to borrow");
+  console.log("Library System verifies user eligibility");
+
+  if (scenario === "user_not_eligible") {
+    console.log("User is not eligible");
+    console.log("Library System informs of ineligibility");
+    return;
+  }
+
+  console.log("User is eligible");
+  console.log("Library System marks book as borrowed");
+  console.log("Library System confirms borrowing");
+  console.log("User takes book");
+  console.log("Time passes");
+  console.log("User returns book");
+  console.log("Library System verifies book and checks for fees");
+
+  if (scenario === "late_fees") {
+    console.log("Late fees applied");
+    console.log("Library System informs of late fees");
+    console.log("User pays late fees");
+  } else if (scenario === "no_late_fees") {
+    console.log("No late fees");
+  }
+
+  if (scenario !== "book_available" && scenario !== "user_eligible") {
+    console.log("Library System marks book as returned");
+    console.log("Library System confirms return");
+  }
+}
+  SO the test cases should be like this:
+  // Test case for book available and user eligible
+function testCase1() {
+  librarySimulation("book_available");
+}
+const expectedOutput1 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is available",
+  "User requests to borrow",
+  "Library System verifies user eligibility",
+  "User is eligible",
+  "Library System marks book as borrowed",
+  "Library System confirms borrowing",
+  "User takes book",
+  "Time passes",
+  "User returns book",
+  "Library System verifies book and checks for fees"
+];
+
+// Test case for book available, user eligible, and no late fees
+function testCase2() {
+  librarySimulation("no_late_fees");
+}
+const expectedOutput2 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is available",
+  "User requests to borrow",
+  "Library System verifies user eligibility",
+  "User is eligible",
+  "Library System marks book as borrowed",
+  "Library System confirms borrowing",
+  "User takes book",
+  "Time passes",
+  "User returns book",
+  "Library System verifies book and checks for fees",
+  "No late fees",
+  "Library System marks book as returned",
+  "Library System confirms return"
+];
+
+// Test case for book available, user eligible, and late fees
+function testCase3() {
+  librarySimulation("late_fees");
+}
+const expectedOutput3 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is available",
+  "User requests to borrow",
+  "Library System verifies user eligibility",
+  "User is eligible",
+  "Library System marks book as borrowed",
+  "Library System confirms borrowing",
+  "User takes book",
+  "Time passes",
+  "User returns book",
+  "Library System verifies book and checks for fees",
+  "Late fees applied",
+  "Library System informs of late fees",
+  "User pays late fees",
+  "Library System marks book as returned",
+  "Library System confirms return"
+];
+
+// Test case for book available but user not eligible
+function testCase4() {
+  librarySimulation("user_not_eligible");
+}
+const expectedOutput4 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is available",
+  "User requests to borrow",
+  "Library System verifies user eligibility",
+  "User is not eligible",
+  "Library System informs of ineligibility"
+];
+
+// Test case for book unavailable
+function testCase5() {
+  librarySimulation("book_unavailable");
+}
+const expectedOutput5 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is not available",
+  "Library System informs book unavailable",
+  "Library System offers to place hold"
+];
+
+// Test case for book unavailable and user requests hold
+function testCase6() {
+  librarySimulation("user_requests_hold");
+}
+const expectedOutput6 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is not available",
+  "Library System informs book unavailable",
+  "Library System offers to place hold",
+  "User agrees to hold",
+  "User requests hold",
+  "Library System places hold on book",
+  "Library System confirms hold placement"
+];
+
+// Test case for invalid scenario
+function testCase7() {
+  librarySimulation("invalid_scenario");
+}
+const expectedOutput7 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Invalid scenario"
+];
+
+// Test case for book available and user eligible (duplicate of testCase1)
+function testCase8() {
+  librarySimulation("user_eligible");
+}
+const expectedOutput8 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is available",
+  "User requests to borrow",
+  "Library System verifies user eligibility",
+  "User is eligible",
+  "Library System marks book as borrowed",
+  "Library System confirms borrowing",
+  "User takes book",
+  "Time passes",
+  "User returns book",
+  "Library System verifies book and checks for fees"
+];
+
+// Test case for book available (duplicate of testCase1)
+function testCase9() {
+  librarySimulation("book_available");
+}
+const expectedOutput9 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is available",
+  "User requests to borrow",
+  "Library System verifies user eligibility",
+  "User is eligible",
+  "Library System marks book as borrowed",
+  "Library System confirms borrowing",
+  "User takes book",
+  "Time passes",
+  "User returns book",
+  "Library System verifies book and checks for fees"
+];
+
+// Test case for book available and user eligible (duplicate of testCase1)
+function testCase10() {
+  librarySimulation("user_eligible");
+}
+const expectedOutput10 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is available",
+  "User requests to borrow",
+  "Library System verifies user eligibility",
+  "User is eligible",
+  "Library System marks book as borrowed",
+  "Library System confirms borrowing",
+  "User takes book",
+  "Time passes",
+  "User returns book",
+  "Library System verifies book and checks for fees"
+];
+
+// Test case for book available, user eligible, and no late fees (duplicate of testCase2)
+function testCase11() {
+  librarySimulation("no_late_fees");
+}
+const expectedOutput11 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is available",
+  "User requests to borrow",
+  "Library System verifies user eligibility",
+  "User is eligible",
+  "Library System marks book as borrowed",
+  "Library System confirms borrowing",
+  "User takes book",
+  "Time passes",
+  "User returns book",
+  "Library System verifies book and checks for fees",
+  "No late fees",
+  "Library System marks book as returned",
+  "Library System confirms return"
+];
+
+// Test case for book available, user eligible, and late fees (duplicate of testCase3)
+function testCase12() {
+  librarySimulation("late_fees");
+}
+const expectedOutput12 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book",
+  "Library System checks book availability",
+  "Book is available",
+  "User requests to borrow",
+  "Library System verifies user eligibility",
+  "User is eligible",
+  "Library System marks book as borrowed",
+  "Library System confirms borrowing",
+  "User takes book",
+  "Time passes",
+  "User returns book",
+  "Library System verifies book and checks for fees",
+  "Late fees applied",
+  "Library System informs of late fees",
+  "User pays late fees",
+  "Library System marks book as returned",
+  "Library System confirms return"
+];
+
+// Test case for book available but user not eligible (duplicate of testCase4)
+function testCase13() {
+  librarySimulation("user_not_eligible");
+}
+const expectedOutput13 = [
+  "User enters search criteria",
+  "Library System displays matching books",
+  "User selects desired book
 }`;
 
   try {
