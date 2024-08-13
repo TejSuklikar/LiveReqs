@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Tldraw } from '@tldraw/tldraw';
 import '@tldraw/tldraw/tldraw.css';
 import axios from 'axios';
 import { saveAs } from 'file-saver';
+import {components} from './CustomComponents';
+import { Tldraw } from '@tldraw/tldraw';
+
 
 export default function App() {
   // State to hold the Tldraw editor instance
@@ -652,146 +654,6 @@ const handleTestCasesClick = async () => {
     return testCases; // Return the array of parsed test cases
   }  
 
-  const handleSave = async () => {
-    if (editor) {
-        try {
-            // Serialize the editor state
-            let serializedData = editor.store.serialize();
-
-            // Ensure the schema version is set
-            if (!serializedData.schemaVersion) {
-                serializedData.schemaVersion = 2; // Set to the appropriate version
-            }
-
-            // Wrap the serialized data under the 'store' key to match the required format
-            const wrappedData = {
-                store: serializedData,
-                schema: {
-                    schemaVersion: serializedData.schemaVersion,
-                    sequences: serializedData.sequences // Ensure sequences are properly included
-                }
-            };
-
-            // Convert the wrapped data to a JSON string
-            const fileContent = JSON.stringify(wrappedData, null, 2);
-
-            // Use the File System Access API to show a save file picker
-            const fileHandle = await window.showSaveFilePicker({
-                suggestedName: 'usecase.tldr',
-                types: [{
-                    description: 'TLDraw Files',
-                    accept: { 'application/json': ['.tldr'] },
-                }],
-            });
-
-            // Create a writable stream
-            const writableStream = await fileHandle.createWritable();
-            
-            // Write the file content to the selected location
-            await writableStream.write(fileContent);
-
-            // Close the writable stream to complete the save
-            await writableStream.close();
-
-            console.log('File saved successfully');
-        } catch (error) {
-            console.error('Error saving the file:', error);
-        }
-    } else {
-        console.error('Editor is not initialized');
-    }
-};
-
-
-
-const handleOpen = () => {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.tldr';
-  input.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const content = event.target.result;
-        let snapshot = JSON.parse(content);
-
-        // Normalize the snapshot structure
-        if (!snapshot.store) {
-          snapshot = {
-            store: snapshot,
-            schema: {
-              schemaVersion: snapshot.schemaVersion || 1,
-              storeVersion: 1,
-              recordVersions: {
-                asset: { version: 1, subTypeKey: 'type', subTypeVersions: {} },
-                camera: { version: 1 },
-                document: { version: 2 },
-                instance: { version: 21 },
-                page: { version: 1 },
-                shape: { version: 3, subTypeKey: 'type', subTypeVersions: {} },
-                instance_page_state: { version: 5 },
-                pointer: { version: 1 },
-              },
-            },
-          };
-        }
-
-        // Ensure all records in the store have a valid typeName
-        const validTypes = ['asset', 'camera', 'document', 'instance', 'page', 'shape', 'instance_page_state', 'pointer'];
-        for (const [key, value] of Object.entries(snapshot.store)) {
-          if (!value.typeName || !validTypes.includes(value.typeName)) {
-            const inferredType = key.split(':')[0];
-            if (validTypes.includes(inferredType)) {
-              value.typeName = inferredType;
-            } else {
-              delete snapshot.store[key];
-            }
-          }
-        }
-
-        // Ensure essential records exist
-        if (!snapshot.store['document:document']) {
-          snapshot.store['document:document'] = { id: 'document:document', typeName: 'document', gridSize: 10 };
-        }
-        if (!snapshot.store['page:page']) {
-          snapshot.store['page:page'] = { id: 'page:page', typeName: 'page', name: 'Page 1', index: 'a1' };
-        }
-
-        if (editor && editor.store) {
-          editor.store.loadSnapshot(snapshot);
-
-          if (isEditorReady()) {
-            try {
-              editor.updateViewportScreenBounds();
-            } catch (error) {
-              console.warn('Error updating viewport:', error);
-              setNotification('Warning: There was an issue updating the viewport. Please check your layout.');
-            }
-          }
-
-          // No notification for compatibility modifications
-          setNotification(null); // Clear any previous notifications
-        } else {
-          console.error('Editor or editor.store is not available');
-          setNotification('Error: Editor is not initialized. Please try reloading the page.');
-        }
-      } catch (error) {
-        console.error('Error loading snapshot:', error);
-        setNotification(`An error occurred while loading the file: ${error.message}`);
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-};
-
-// Helper function to check if the editor is fully initialized
-const isEditorReady = () => {
-  return editor && editor.store && editor.getViewportScreenBounds();
-};
 
 const handleFileChange = (event) => {
   const file = event.target.files[0];
@@ -813,26 +675,13 @@ const handleFileChange = (event) => {
   }
 };
 
-// Example validation function
-const validateSnapshot = (json) => {
-    // Perform various checks on the snapshot JSON structure
-    // Ensure essential fields exist and have valid types
-    if (typeof json.schemaVersion !== 'number') {
-        console.error('Invalid or missing schemaVersion.');
-        return false;
-    }
-    if (!json.store || typeof json.store !== 'object') {
-        console.error('Invalid or missing store data.');
-        return false;
-    }
-    // Add more checks based on your schema requirements
-    return true; // Return true if all validations pass
-};
-
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
       {/* The main container that occupies the entire viewport */}
-      <Tldraw key={fileLoaded} onMount={onMount} />
+      <Tldraw 
+      components={components} 
+      onMount={onMount}
+      />
       {/* Hidden file input for opening .tldr files */}
       <input
         type="file"
@@ -945,46 +794,7 @@ const validateSnapshot = (json) => {
           Run Tests
         </button>
       </div>
-      <div style={{
-        position: 'absolute',
-        bottom: '50px',
-        left: '20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        zIndex: 1000,
-      }}>
-        {/* Button to save the current work as a .tldr file */}
-        <button
-          style={{
-            backgroundColor: 'grey',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            padding: '10px 20px',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-          }}
-          onClick={handleSave}
-        >
-          Save
-        </button>
-        {/* Button to open a .tldr file */}
-        <button
-          style={{
-            backgroundColor: 'grey',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            padding: '10px 20px',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-          }}
-          onClick={handleOpen}
-        >
-          Open
-        </button>
-      </div>
+      
       {notification && (
         <div style={{
           position: 'absolute',
