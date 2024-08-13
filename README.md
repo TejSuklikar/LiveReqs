@@ -11,7 +11,7 @@ I’ve built a web application designed specifically for Product Managers who wa
   
 - Run npm install to install the necessary dependencies.
   
-- Install the vm2 package by typing npm install vm2.
+- Install the vm package by typing npm install vm.
   
 - Start the backend server by executing node server.js.
   
