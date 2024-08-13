@@ -107,7 +107,232 @@ app.post('/api/diagram', async (req, res) => {
   free to reference the description. Only provide the mermaid markdown, without any additional explanations or comments.
   The mermaid markdown should accurately represent all flows and scenarios described in the use case, including alternate flows. Every single flow should be represented. Even if they aren't
   in the use case description and they are neccesary still add them. Be very thorough. 
+  Lets say this was the description: A customer contacts support through various channels (phone, email, chat). The issue is logged, and initial troubleshooting is provided. If unresolved, it's escalated to a specialist. The specialist diagnoses and provides a solution. The customer is informed and asked to confirm the resolution. If resolved, the case is closed; if not, it returns for further troubleshooting. The customer can provide feedback on the support experience, which is reviewed for service improvement.
+  And this was the Use Case Description: 
+  Use Case: 
+Pre-conditions:
 
+Customer support system is operational
+Support agents are available
+Customer has an account in the system
+Knowledge base is up-to-date
+
+Success Criteria:
+
+Customer's issue is resolved
+Support case is closed
+Customer provides positive feedback
+Resolution is documented for future reference
+
+Triggers:
+
+Customer initiates contact with support through phone, email, chat, or self-service portal
+
+Actors:
+
+Customer
+Initial Support Agent
+Specialist Support Agent
+Support System
+Knowledge Base System
+Feedback System
+
+Description:
+The goal of the system is to efficiently resolve customer issues through a structured support process, utilizing various channels and levels of expertise while maintaining customer satisfaction and improving service quality.
+Basic Flow:
+
+Customer contacts support through chosen channel
+System logs the support request and assigns a unique case ID
+System assigns case to an available Initial Support Agent
+Initial Support Agent reviews the issue and customer history
+Initial Support Agent provides initial troubleshooting based on knowledge base
+Customer attempts the suggested solution
+Initial Support Agent asks if the issue is resolved
+Customer confirms issue resolution
+System prompts customer for feedback
+Customer provides feedback
+System logs feedback and resolution details
+System closes the case
+Use Case ends in Success
+
+Alternate Flows:
+3A. Customer uses self-service portal:
+
+System presents relevant knowledge base articles
+Customer follows self-help instructions
+System prompts customer if issue is resolved
+If resolved, continue from Step 9 of Basic Flow
+If unresolved, continue from Step 3 of Basic Flow
+
+5A. Initial Support Agent cannot find relevant solution in knowledge base:
+
+Agent informs customer that additional research is needed
+Agent puts customer on hold or promises a callback
+Agent consults with colleagues or performs additional research
+Use Case continues from Step 5 of Basic Flow
+
+7A. Customer indicates issue is not resolved:
+
+Initial Support Agent attempts additional troubleshooting
+If still unresolved, Agent escalates the issue to a Specialist Support Agent
+Specialist Support Agent reviews the case
+Specialist Support Agent diagnoses the issue and provides a solution
+Customer attempts the suggested solution
+Specialist Support Agent asks if the issue is resolved
+If resolved, continue from Step 8 of Basic Flow
+If unresolved, return to step 3 of this flow
+
+7B. Customer requests escalation:
+
+Initial Support Agent escalates the issue to a Specialist Support Agent
+Use Case continues from Step 3 of Alternate Flow 7A
+
+8A. Customer indicates issue is not resolved after specialist intervention:
+
+Specialist Support Agent informs customer that further investigation is needed
+Agent schedules a follow-up appointment or promises to call back
+Agent consults with additional specialists or product development team
+Use Case continues from Step 3 of Alternate Flow 7A
+
+10A. Customer declines to provide feedback:
+
+System logs that feedback was declined
+Use Case ends in Success
+
+10B. Customer provides negative feedback:
+
+System flags the case for review
+Support manager is notified
+Support manager reviews the case and contacts the customer for additional information
+Support manager takes necessary actions to address the concerns
+Use Case ends in Success with follow-up actions
+
+Additional Alternate Flows:
+1A. System experiences technical issues:
+
+Customer is informed of technical difficulties
+System logs the failed attempt
+Customer is provided alternative contact methods
+Use Case ends in Failure
+
+2A. High volume of requests:
+
+System estimates wait time and informs customer
+Customer chooses to wait or request a callback
+If callback requested, system schedules callback and notifies available agent
+Use Case continues from Step 3 of Basic Flow or ends if customer abandons
+
+5B. Issue requires on-site support:
+
+Agent informs customer that on-site support is necessary
+Agent schedules on-site visit
+On-site support is conducted
+Use Case continues from Step 7 of Basic Flow
+
+8B. Customer is dissatisfied with resolution:
+
+Agent offers alternative solutions or escalation
+If customer accepts, return to Step 5 of Basic Flow or Step 2 of Alternate Flow 7A
+If customer declines, agent offers compensation or alternative resolution
+Use Case ends in Partial Success
+
+11A. Resolution reveals systemic issue:
+
+System flags the case for product/service improvement
+Product team is notified for potential updates
+Use Case continues from Step 12 of Basic Flow
+This is what the Mermaid should look like.Look how thorough it is, thats how thorough every single one should be.
+graph TD
+    %% Basic Flow
+    A[Start] --> B[1. Customer contacts support]
+    B --> C[2. System logs request and assigns case ID]
+    C --> D[3. System assigns case to Initial Support Agent]
+    D --> E[4. Agent reviews issue and customer history]
+    E --> F[5. Agent provides initial troubleshooting]
+    F --> G[6. Customer attempts solution]
+    G --> H[7. Agent asks if issue is resolved]
+    H --> I[8. Customer confirms resolution]
+    I --> J[9. System prompts for feedback]
+    J --> K[10. Customer provides feedback]
+    K --> L[11. System logs feedback and resolution]
+    L --> M[12. System closes the case]
+    M --> N[End - Success]
+
+    %% Alternate Flows 
+    %% 1A
+    B -.-> |1A| AA[Customer informed of technical difficulties]
+    AA --> AB[System logs failed attempt]
+    AB --> AC[Customer provided alternative contact methods]
+    AC --> AD[End - Failure]
+
+    %% 2A
+    C -.-> |2A| BA[System estimates wait time]
+    BA --> BB{Customer choice}
+    BB -->|Wait| D
+    BB -->|Callback| BC[System schedules callback]
+    BC --> BD[Agent notified]
+    BD --> D
+    BB -->|Abandon| BE[End - Customer Abandoned]
+
+    %% 3A
+    C -.-> |3A| CA[System presents knowledge base articles]
+    CA --> CB[Customer follows self-help instructions]
+    CB --> CC{Issue resolved?}
+    CC -->|Yes| J
+    CC -->|No| D
+
+    %% 5A
+    E -.-> |5A| DA[Agent informs customer research needed]
+    DA --> DB[Agent puts customer on hold/promises callback]
+    DB --> DC[Agent consults colleagues/researches]
+    DC --> F
+
+    %% 5B
+    E -.-> |5B| EA[Agent informs on-site support needed]
+    EA --> EB[Agent schedules on-site visit]
+    EB --> EC[On-site support conducted]
+    EC --> H
+
+    %% 7A and 7B
+    H -.-> |7A/7B| FA[Agent attempts additional troubleshooting/Customer requests escalation]
+    FA --> FB{Resolved?}
+    FB -->|No| FC[Agent escalates to Specialist]
+    FC --> FD[Specialist reviews case]
+    FD --> FE[Specialist diagnoses and provides solution]
+    FE --> FF[Customer attempts solution]
+    FF --> FG{Resolved?}
+    FG -->|Yes| I
+    FG -->|No| FD
+
+    %% 8A
+    I -.-> |8A| HA[Specialist informs further investigation needed]
+    HA --> HB[Agent schedules follow-up]
+    HB --> HC[Agent consults additional specialists]
+    HC --> FD
+
+    %% 8B
+    I -.-> |8B| IA{Customer dissatisfied}
+    IA -->|Accept alternatives| IB[Agent offers alternative solutions]
+    IB --> F
+    IA -->|Decline alternatives| IC[Agent offers compensation]
+    IC --> ID[End - Partial Success]
+
+    %% 10A
+    K -.-> |10A| JA[System logs feedback declined]
+    JA --> M
+
+    %% 10B
+    K -.-> |10B| KA[System flags case for review]
+    KA --> KB[Support manager notified]
+    KB --> KC[Manager reviews and contacts customer]
+    KC --> KD[Manager takes action]
+    KD --> KE[End - Success with follow-up]
+
+    %% 11A
+    L -.-> |11A| LA[System flags for product improvement]
+    LA --> LB[Product team notified]
+    LB --> M
+Dont put the %% in ur responses. Keep it in normal mermaid markdown syntax.
 Description: ${description}
 Use Case Description: ${useCaseDescription}`; // Include both the description and the detailed use case in the prompt
 
@@ -121,7 +346,7 @@ Use Case Description: ${useCaseDescription}`; // Include both the description an
       messages: [
         {
           role: 'user',
-          content: `Convert the use case to mermaid markdown.`, // Provide a simple instruction as the content for the user message
+          content: prompt, // Provide a simple instruction as the content for the user message
         },
       ],
     });
@@ -168,266 +393,61 @@ app.post('/api/code', async (req, res) => {
   }
 
   // Define the prompt to convert the Mermaid markdown into JavaScript code
-  const prompt = `Convert the following Mermaid markdown and use case description into JavaScript code for a simulation. The code should use structured if/else or switch/case statements to handle different scenarios, representing all possible flows described in both the Mermaid diagram and the use case description.
-  Guidelines:
+  const prompt =  `Convert the following Mermaid markdown and use case description into JavaScript code for a simulation. The code should use structured if/else or switch/case statements to handle different scenarios, representing all possible flows described in both the Mermaid diagram and the use case description.
   
-  Function name and structure:
-  
-  Name the function based on the simulation context (e.g., librarySimulation, eCommerceSimulation).
-  Use a 'scenario' parameter to control different flows.
-  Structure the function with a main flow and branching logic for each decision point.
-  
-  
-  Use case integration:
-  
-  Carefully read and incorporate all details from the use case description.
-  Ensure that any specific scenarios, edge cases, or requirements mentioned in the use case are represented in the code.
-  Use the terminology and naming conventions from the use case in your code for consistency.
-  
-  
-  Code completeness and clarity:
-  
-  Include every flow and decision point from both the Mermaid diagram and use case description.
-  Do not use ellipsis (...) or summarizing comments. Show the full code for each branch.
-  Represent all possible outcomes, including error cases or unexpected scenarios.
-  
-  
-  Coding style:
-  
-  Use clear, consistent indentation throughout.
-  Prefer if/else statements for branching logic, using else if for multiple conditions.
-  Always include a final 'else' statement to handle unexpected scenarios.
-  Use descriptive variable names matching entities in the Mermaid diagram and use case.
-  
-  
-  Console output:
-  
-  Use console.log statements for key actions and decisions at each step.
-  Ensure console.log statements accurately reflect the simulation's state and flow.
-  
-  
-  Code simplicity:
-  
-  Avoid unnecessary complexity. Do not include random number generation or external libraries.
-  Focus on representing the logic flow described in the Mermaid diagram and use case.
-  
-  
-  Output format:
-  
-  Provide only the JavaScript code without any introductory or concluding text.
-  Ensure the entire function is visible and not truncated.
-  
-  
-  
-  Example structure:
-  function eCommerceSimulation(scenario) {
-  console.log("User accesses e-commerce website");
-  console.log("System displays product catalog");
-  console.log("User browses catalog");
-  console.log("User selects items");
+Guidelines:
 
-  if (scenario === "item_in_stock" || scenario === "proceed_to_checkout" || scenario === "modify_cart") {
-    console.log("Item in stock");
-    console.log("System adds items to cart");
-    if (scenario === "proceed_to_checkout" || scenario === "valid_address" || scenario === "invalid_address" || scenario === "payment_successful" || scenario === "payment_failed") {
-      console.log("User proceeds to checkout");
-      console.log("System prompts for shipping info");
-      console.log("User enters shipping info");
-      if (scenario === "valid_address" || scenario === "payment_successful" || scenario === "payment_failed") {
-        console.log("Valid address");
-        console.log("System presents payment methods");
-        console.log("User selects payment method");
-        console.log("User confirms purchase");
-        console.log("System processes payment");
-        if (scenario === "payment_successful") {
-          console.log("Payment successful");
-          console.log("System generates order confirmation");
-          console.log("System sends confirmation email");
-          console.log("System processes order");
-          if (scenario === "items_still_available" || scenario === "items_unavailable") {
-            if (scenario === "items_still_available") {
-              console.log("Items still available");
-              console.log("System notifies Shipping Service");
-              console.log("Shipping Service provides tracking number");
-              console.log("System sends tracking number to user");
-              console.log("User tracks shipment");
-              if (scenario === "user_requests_cancellation" || scenario === "order_cancellable" || scenario === "order_not_cancellable") {
-                console.log("User requests cancellation");
-                if (scenario === "order_cancellable") {
-                  console.log("Order cancellable");
-                  console.log("System cancels order and initiates refund");
-                  console.log("Use case ends in failure");
-                } else if (scenario === "order_not_cancellable") {
-                  console.log("Order not cancellable");
-                  console.log("System informs user order can't be cancelled");
-                  console.log("Shipping Service attempts delivery");
-                  if (scenario === "delivery_successful") {
-                    console.log("Delivery successful");
-                    console.log("Use case ends in success");
-                  } else if (scenario === "delivery_failed") {
-                    console.log("Delivery failed");
-                    console.log("System informs user of delivery issue");
-                    if (scenario === "user_updates_info") {
-                      console.log("User updates info");
-                      console.log("System sends tracking number to user");
-                    } else if (scenario === "user_requests_refund") {
-                      console.log("User requests refund");
-                      console.log("System processes refund");
-                      console.log("Use case ends in failure");
-                    }
-                  }
-                }
-              } else {
-                console.log("User does not request cancellation");
-                console.log("Shipping Service attempts delivery");
-                if (scenario === "delivery_successful") {
-                  console.log("Delivery successful");
-                  console.log("Use case ends in success");
-                } else if (scenario === "delivery_failed") {
-                  console.log("Delivery failed");
-                  console.log("System informs user of delivery issue");
-                  if (scenario === "user_updates_info") {
-                    console.log("User updates info");
-                    console.log("System sends tracking number to user");
-                  } else if (scenario === "user_requests_refund") {
-                    console.log("User requests refund");
-                    console.log("System processes refund");
-                    console.log("Use case ends in failure");
-                  }
-                }
-              }
-            } else if (scenario === "items_unavailable") {
-              console.log("Items unavailable");
-              console.log("System notifies user of unavailable items");
-              if (scenario === "user_continues_with_available") {
-                console.log("User continues with available items");
-                console.log("System adjusts order and issues partial refund");
-                console.log("System notifies Shipping Service");
-                console.log("Shipping Service provides tracking number");
-                console.log("System sends tracking number to user");
-                console.log("User tracks shipment");
-              } else if (scenario === "user_cancels_order") {
-                console.log("User cancels order");
-                console.log("System cancels order and issues full refund");
-                console.log("Use case ends in failure");
-              }
-            }
-          }
-        } else if (scenario === "payment_failed") {
-          console.log("Payment failed");
-          console.log("System informs user of payment failure");
-          if (scenario === "user_tries_another_method") {
-            console.log("User tries another method");
-            console.log("System presents payment methods");
-          } else if (scenario === "user_abandons_purchase") {
-            console.log("User abandons purchase");
-            console.log("Use case ends in failure");
-          }
-        }
-      } else if (scenario === "invalid_address") {
-        console.log("Invalid address");
-        console.log("User corrects shipping info");
-      }
-    } else if (scenario === "modify_cart") {
-      console.log("User modifies cart");
-    }
-  } else if (scenario === "item_out_of_stock") {
-    console.log("Item out of stock");
-    console.log("System informs user item is out of stock");
-    if (scenario === "user_continues_shopping") {
-      console.log("User continues shopping");
-      console.log("User browses catalog");
-    } else if (scenario === "user_removes_item") {
-      console.log("User removes item");
-      console.log("System adds items to cart");
-    }
-  } else {
-    console.log("Invalid scenario");
-  }
-}
+Function name and structure:
 
-This is another way to write the code:
-function cricketBallDeliverySimulation(scenario) {
-  console.log("Cricket match is in progress");
-  console.log("Bowler is ready to bowl");
-  console.log("Batter is at the crease");
-  console.log("Umpire is in position");
-  console.log("Bowler delivers the ball");
-  console.log("System registers the ball has been bowled");
+- Name the function based on the simulation context (e.g., librarySimulation, eCommerceSimulation).
+- Use a 'scenario' parameter to control different flows.
+- Structure the function with a main flow and branching logic for each decision point.
+- Ensure that each branch and decision point directly corresponds to an expected output in the test cases.
 
-  switch (scenario) {
-    case "hit":
-      console.log("Batter decides to hit the ball");
-      console.log("Batter hits the ball");
-      console.log("System registers the ball has been hit");
-      console.log("Use Case ends in Success");
-      break;
-    case "leave":
-      console.log("Batter decides to leave the ball");
-      break;
-    case "miss":
-      console.log("Batter decides to miss the ball");
-      console.log("Batter misses the ball");
-      console.log("Ball continues past the batter");
-      break;
-    case "strikes_stumps":
-      console.log("Ball strikes the stumps");
-      console.log("Umpire declares the batter out");
-      console.log("System registers the batter as out");
-      console.log("Use Case ends in Success");
-      break;
-    case "strikes_body":
-      console.log("Ball strikes the batter's body");
-      console.log("Umpire assesses if the ball would have hit the stumps");
-      break;
-    case "would_hit_stumps":
-      console.log("Umpire determines the ball would have hit the stumps");
-      console.log("Umpire declares the batter out LBW (Leg Before Wicket)");
-      console.log("System registers the batter as out LBW");
-      console.log("Use Case ends in Success");
-      break;
-    case "would_not_hit_stumps":
-      console.log("Umpire determines the ball would not have hit the stumps");
-      console.log("Continue play");
-      console.log("Use Case ends in Success");
-      break;
-    case "passes_by":
-      console.log("Ball passes by without hitting stumps or batter");
-      console.log("Umpire assesses if the ball was too wide to hit");
-      break;
-    case "too_wide":
-      console.log("Umpire determines the ball was too wide to hit");
-      console.log("Umpire declares a wide ball");
-      console.log("System adds one run to the batting team's score");
-      console.log("System signals that the bowler must bowl another ball");
-      console.log("Use Case continues from Step 1");
-      break;
-    case "not_too_wide":
-      console.log("Umpire determines the ball was not too wide to hit");
-      console.log("System registers the ball as a legal delivery");
-      console.log("Use Case ends in Success");
-      break;
-    case "invalid_scenario":
-      console.log("Invalid batter decision scenario");
-      break;
-    case "invalid_outcome":
-      console.log("Invalid ball outcome scenario");
-      break;
-    case "invalid_lbw":
-      console.log("Invalid LBW assessment scenario");
-      break;
-    case "invalid_width":
-      console.log("Invalid width assessment scenario");
-      break;
-    default:
-      console.log("Invalid scenario");
-  }
-}
-  Ensure your code follows this structure, is complete, covers all possible flows from both the Mermaid diagram and use case description, and accurately represents the described simulation.
-  Use Case Description:
-  ${useCaseDescription}
-  Mermaid Markdown:
-  ${markdownToUse}`;
+Use case integration:
+
+- Carefully read and incorporate all details from the use case description.
+- Ensure that any specific scenarios, edge cases, or requirements mentioned in the use case are represented in the code.
+- Use the terminology and naming conventions from the use case in your code for consistency.
+- Ensure that every possible flow is handled and that there is a corresponding console.log output for each scenario.
+
+Code completeness and clarity:
+
+- Include every flow and decision point from both the Mermaid diagram and use case description.
+- Do not use ellipsis (...) or summarizing comments. Show the full code for each branch.
+- Represent all possible outcomes, including error cases or unexpected scenarios.
+- Ensure that the structure of the code allows for precise and clear matching between test cases and expected outcomes.
+
+Coding style:
+
+- Use clear, consistent indentation throughout.
+- Prefer if/else statements for branching logic, using else if for multiple conditions.
+- Always include a final 'else' statement to handle unexpected scenarios.
+- Use descriptive variable names matching entities in the Mermaid diagram and use case.
+
+Console output:
+
+- Use console.log statements for key actions and decisions at each step.
+- Ensure console.log statements accurately reflect the simulation's state and flow.
+- Every step of the simulation should produce an output that matches exactly with what is expected in the test cases.
+
+Code simplicity:
+
+- Avoid unnecessary complexity. Do not include random number generation or external libraries.
+- Focus on representing the logic flow described in the Mermaid diagram and use case.
+
+Output format:
+
+- Provide only the JavaScript code without any introductory or concluding text.
+- Ensure the entire function is visible and not truncated.
+
+Ensure that the generated code adheres to the structure and the guidelines above and is fully aligned with the expected outputs that will be verified through the test cases. Ensure that they way the code is structured, so that when its run on the test cases
+it's correctly branching for all the scenarios defined in the test cases. This is crucial. 
+
+Use Case Description:
+${useCaseDescription}
+Mermaid Markdown:
+${markdownToUse}`;
 
   try {
     // Call the Anthropic API to convert the Mermaid markdown to JavaScript code
@@ -467,313 +487,35 @@ ${useCaseDescription}
 Simulation Code:
 ${code}
 
-Generate at least 20 cases that cover all the possible flows described in the use case description and code. I want a minimum of 20 test cases for each time. Feel free to do more than 20 as well.
+Generate at least 20 cases that cover all the possible flows described in the use case description and code. Each test case should:
 
-// Continue this pattern for the rest of the test cases...
-Ensure that your test cases cover:
-1. The basic flow described in the use case
-2. All alternate flows mentioned in the use case
-3. Edge cases and error scenarios that can be inferred from the use case and code
+1. Cover a specific flow or scenario represented in the code.
+2. Have an expected output that exactly matches the console.log statements in the provided code, including punctuation and capitalization.
+3. Avoid introducing any scenarios or outcomes not present in the provided code.
+4. Be structured to trigger each branch in the code at least once across the test cases.
+5. Ensure that the expected outputs match the code exactly—no additional text or differences in wording.
 
-IMPORTANT: 
-- The expected outputs must exactly match the console.log statements in the provided code, including punctuation and capitalization. 
-- Each test case should start with a brief, one-line description comment explaining what it's testing.
-- Do not include any additional explanations or comments outside of the function definitions and the initial description comment.
-- Adapt your test cases to the specific structure and logic of the provided code and use case.
-- Each test case should be designed to test a specific flow through the simulation as described in the use case.
-- These cases basically need to be different choices taken at different switch cases or if/else
-- Make sure that the expected output is exactly the same words and capitalization as the console.log statements in the code.
- THEY NEED TO BE ABLE TO EASILY RUN IN THIS CODE. IT SHOULD ONLY CREATE TESTS THAT SIMULATE THINGS HAPPENING IN THIS CODE STRUCUTRE. MAKE SURE THE EXPECTED OUTPUTS ARE CORRECT. 
+Each test case should start with a brief, one-line description comment explaining what it's testing. The expected output should be an array of strings that matches the console.log output for that scenario.
 
- The code will be formatted like this:
- function cricketBallDeliverySimulation(scenario) {
-  console.log("Cricket match is in progress");
-  console.log("Bowler is ready to bowl");
-  console.log("Batter is at the crease");
-  console.log("Umpire is in position");
-  console.log("Bowler delivers the ball");
-  console.log("System registers the ball has been bowled");
+IMPORTANT:
+- Ensure that every test case directly corresponds to a flow or decision point in the provided code.
+- The expected outputs must exactly match the console.log statements in the provided code, including punctuation and capitalization.
+- The test cases should not introduce or test scenarios that aren't present in the code.
+- Ensure that the expected outputs are correct and align perfectly with the logic of the code.
 
-  switch (scenario) {
-    case "hit":
-      console.log("Batter decides to hit the ball");
-      console.log("Batter hits the ball");
-      console.log("System registers the ball has been hit");
-      console.log("Use Case ends in Success");
-      break;
-    case "leave":
-      console.log("Batter decides to leave the ball");
-      break;
-    case "miss":
-      console.log("Batter decides to miss the ball");
-      console.log("Batter misses the ball");
-      console.log("Ball continues past the batter");
-      break;
-    case "strikes_stumps":
-      console.log("Ball strikes the stumps");
-      console.log("Umpire declares the batter out");
-      console.log("System registers the batter as out");
-      console.log("Use Case ends in Success");
-      break;
-    case "strikes_body":
-      console.log("Ball strikes the batter's body");
-      console.log("Umpire assesses if the ball would have hit the stumps");
-      break;
-    case "would_hit_stumps":
-      console.log("Umpire determines the ball would have hit the stumps");
-      console.log("Umpire declares the batter out LBW (Leg Before Wicket)");
-      console.log("System registers the batter as out LBW");
-      console.log("Use Case ends in Success");
-      break;
-    case "would_not_hit_stumps":
-      console.log("Umpire determines the ball would not have hit the stumps");
-      console.log("Continue play");
-      console.log("Use Case ends in Success");
-      break;
-    case "passes_by":
-      console.log("Ball passes by without hitting stumps or batter");
-      console.log("Umpire assesses if the ball was too wide to hit");
-      break;
-    case "too_wide":
-      console.log("Umpire determines the ball was too wide to hit");
-      console.log("Umpire declares a wide ball");
-      console.log("System adds one run to the batting team's score");
-      console.log("System signals that the bowler must bowl another ball");
-      console.log("Use Case continues from Step 1");
-      break;
-    case "not_too_wide":
-      console.log("Umpire determines the ball was not too wide to hit");
-      console.log("System registers the ball as a legal delivery");
-      console.log("Use Case ends in Success");
-      break;
-    case "invalid_scenario":
-      console.log("Invalid batter decision scenario");
-      break;
-    case "invalid_outcome":
-      console.log("Invalid ball outcome scenario");
-      break;
-    case "invalid_lbw":
-      console.log("Invalid LBW assessment scenario");
-      break;
-    case "invalid_width":
-      console.log("Invalid width assessment scenario");
-      break;
-    default:
-      console.log("Invalid scenario");
-  }
+Example structure of a test case:
+
+// Test case for specific scenario
+function testCaseX() {
+  simulationFunction("specific_scenario");
 }
-}
-The test cases should be formatted something like this. Make sure that you model the test cases after the code so they always pass but cover everything thats in the code. 
-The expected output should only contain the syntax from the code. Nothing else. Every word must be the exact same. Dont add anything else to an expected output if its not in the code. This is very important. 
-Here are 20 test cases for the cricketBallDeliverySimulation function, covering all possible flows described in the code:
-
-// Test case for batter hitting the ball
-function testCase1() {
-  cricketBallDeliverySimulation("hit");
-}
-const expectedOutput1 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Batter decides to hit the ball",
-  "Batter hits the ball",
-  "System registers the ball has been hit",
-  "Use Case ends in Success"
+const expectedOutputX = [
+  "Exact console output as expected from the code",
+  "Another line of exact console output",
+  "Final line of expected console output"
 ];
 
-// Test case for batter leaving the ball
-function testCase2() {
-  cricketBallDeliverySimulation("leave");
-}
-const expectedOutput2 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Batter decides to leave the ball"
-];
-
-// Test case for batter missing the ball
-function testCase3() {
-  cricketBallDeliverySimulation("miss");
-}
-const expectedOutput3 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Batter decides to miss the ball",
-  "Batter misses the ball",
-  "Ball continues past the batter"
-];
-
-// Test case for ball striking the stumps
-function testCase4() {
-  cricketBallDeliverySimulation("strikes_stumps");
-}
-const expectedOutput4 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Ball strikes the stumps",
-  "Umpire declares the batter out",
-  "System registers the batter as out",
-  "Use Case ends in Success"
-];
-
-// Test case for ball striking the batter's body
-function testCase5() {
-  cricketBallDeliverySimulation("strikes_body");
-}
-const expectedOutput5 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Ball strikes the batter's body",
-  "Umpire assesses if the ball would have hit the stumps"
-];
-
-// Test case for ball that would hit stumps (LBW)
-function testCase6() {
-  cricketBallDeliverySimulation("would_hit_stumps");
-}
-const expectedOutput6 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Umpire determines the ball would have hit the stumps",
-  "Umpire declares the batter out LBW (Leg Before Wicket)",
-  "System registers the batter as out LBW",
-  "Use Case ends in Success"
-];
-
-// Test case for ball that would not hit stumps
-function testCase7() {
-  cricketBallDeliverySimulation("would_not_hit_stumps");
-}
-const expectedOutput7 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Umpire determines the ball would not have hit the stumps",
-  "Continue play",
-  "Use Case ends in Success"
-];
-
-// Test case for ball passing by without hitting stumps or batter
-function testCase8() {
-  cricketBallDeliverySimulation("passes_by");
-}
-const expectedOutput8 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Ball passes by without hitting stumps or batter",
-  "Umpire assesses if the ball was too wide to hit"
-];
-
-// Test case for ball that is too wide
-function testCase9() {
-  cricketBallDeliverySimulation("too_wide");
-}
-const expectedOutput9 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Umpire determines the ball was too wide to hit",
-  "Umpire declares a wide ball",
-  "System adds one run to the batting team's score",
-  "System signals that the bowler must bowl another ball",
-  "Use Case continues from Step 1"
-];
-
-// Test case for ball that is not too wide
-function testCase10() {
-  cricketBallDeliverySimulation("not_too_wide");
-}
-const expectedOutput10 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Umpire determines the ball was not too wide to hit",
-  "System registers the ball as a legal delivery",
-  "Use Case ends in Success"
-];
-
-// Test case for invalid batter decision scenario
-function testCase11() {
-  cricketBallDeliverySimulation("invalid_scenario");
-}
-const expectedOutput11 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Invalid batter decision scenario"
-];
-
-// Test case for invalid ball outcome scenario
-function testCase12() {
-  cricketBallDeliverySimulation("invalid_outcome");
-}
-const expectedOutput12 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Invalid ball outcome scenario"
-];
-
-// Test case for invalid LBW assessment scenario
-function testCase13() {
-  cricketBallDeliverySimulation("invalid_lbw");
-}
-const expectedOutput13 = [
-  "Cricket match is in progress",
-  "Bowler is ready to bowl",
-  "Batter is at the crease",
-  "Umpire is in position",
-  "Bowler delivers the ball",
-  "System registers the ball has been bowled",
-  "Invalid LBW assessment scenario"
-];
-
-// Test case for invalid width assessment scenario
-function testCase14() {
-  cricketBallDeliverySimulation("invalid_width");
-}
+// Continue this pattern for all 20 test cases, ensuring complete coverage of the simulation code. Even if they are redundant include at least 20. 
 
 Make sure that the test cases only test the code and the stuff in the code, dont test scenarios that aren't present in the code. Look at the code very closely and make sure to line up the expected outputs. 
 }`;
@@ -783,7 +525,7 @@ Make sure that the test cases only test the code and the stuff in the code, dont
     // Call the Anthropic API to generate the test cases
     const msg = await callAnthropicWithRetry(anthropic, {
       model: 'claude-3-5-sonnet-20240620', // Specify the model to use
-      max_tokens: 3000, // Limit the number of tokens in the response
+      max_tokens: 4000, // Limit the number of tokens in the response
       temperature: 0, // Set temperature for deterministic output
       system: prompt, // Use the prompt defined above as the system message
       messages: [
