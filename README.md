@@ -16,10 +16,6 @@ I’ve built a web application designed specifically for Product Managers who wa
 - Start the backend server by executing node server.js.
   
 **4. Set Up the Frontend:**
-- In the second terminal (tldrawapp), run npm install to set up the frontend dependencies.
-  
-- Install the file-saver package with npm install file-saver.
-  
 - Start the frontend by typing npm start.
 
 **You’re All Set! The app is now ready to use.**
