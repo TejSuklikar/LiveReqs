@@ -1,29 +1,27 @@
-const vm = require('vm');
+const { VM } = require('vm2');
 
 function runCodeAndTests(code, testCases) {
   // Log received data for debugging purposes
   console.log("Received code:", code);
   console.log("Received testCases:", JSON.stringify(testCases, null, 2));
 
-  // Create a sandboxed context for running the code
-  // This includes a custom console.log function that captures output
-  const context = {
-    console: {
-      log: function(...args) {
-        this.output.push(args.join(' '));
-      },
-      output: []
+  // Create a sandboxed environment with vm2
+  const vm = new VM({
+    sandbox: {
+      console: {
+        log: function(...args) {
+          this.output.push(args.join(' '));
+        },
+        output: []
+      }
     }
-  };
-
-  // Create a VM context with our sandboxed environment
-  vm.createContext(context);
+  });
 
   let results = [];
 
   try {
-    // Execute the main simulation code in the sandboxed context
-    vm.runInContext(code, context);
+    // Execute the main simulation code in the sandboxed environment
+    vm.run(code);
     results.push("Main code executed successfully");
 
     // Extract the name of the simulation function from the provided code
@@ -34,13 +32,13 @@ function runCodeAndTests(code, testCases) {
     const simulationFunctionName = functionMatch[1];
 
     // Verify that the extracted function name actually exists in the context
-    const isFunctionDefined = vm.runInContext(`typeof ${simulationFunctionName} === "function"`, context);
+    const isFunctionDefined = vm.run(`typeof ${simulationFunctionName} === "function"`);
     if (!isFunctionDefined) {
       throw new Error(`${simulationFunctionName} function is not defined in the provided code`);
     }
 
-    // Store the function name in the context for later use in test cases
-    context.simulationFunctionName = simulationFunctionName;
+    // Store the function name in the sandbox for later use in test cases
+    vm.sandbox.simulationFunctionName = simulationFunctionName;
 
   } catch (error) {
     // If there's an error in the main code execution, return it immediately
@@ -50,11 +48,11 @@ function runCodeAndTests(code, testCases) {
   // Execute each test case
   testCases.forEach(testCase => {
     // Reset the output capture for each test case
-    context.console.output = [];
+    vm.sandbox.console.output = [];
     try {
       // Run the simulation function with the test case's scenario
-      vm.runInContext(`${context.simulationFunctionName}("${testCase.scenario}")`, context);
-      const actualOutput = context.console.output;
+      vm.run(`${vm.sandbox.simulationFunctionName}("${testCase.scenario}")`);
+      const actualOutput = vm.sandbox.console.output;
       // Compare the actual output with the expected output
       const passed = JSON.stringify(actualOutput) === JSON.stringify(testCase.expectedOutput);
       
