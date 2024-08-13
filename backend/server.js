@@ -168,82 +168,266 @@ app.post('/api/code', async (req, res) => {
   }
 
   // Define the prompt to convert the Mermaid markdown into JavaScript code
-  const prompt = `Convert the following Mermaid markdown into JavaScript code that can be used in a simulation. The generated code should use structured if/else or switch/case statements to handle different scenarios. The goal is to produce a clear and logically structured function that represents all possible flows.
+  const prompt = `Convert the following Mermaid markdown and use case description into JavaScript code for a simulation. The code should use structured if/else or switch/case statements to handle different scenarios, representing all possible flows described in both the Mermaid diagram and the use case description.
+  Guidelines:
+  
+  Function name and structure:
+  
+  Name the function based on the simulation context (e.g., librarySimulation, eCommerceSimulation).
+  Use a 'scenario' parameter to control different flows.
+  Structure the function with a main flow and branching logic for each decision point.
+  
+  
+  Use case integration:
+  
+  Carefully read and incorporate all details from the use case description.
+  Ensure that any specific scenarios, edge cases, or requirements mentioned in the use case are represented in the code.
+  Use the terminology and naming conventions from the use case in your code for consistency.
+  
+  
+  Code completeness and clarity:
+  
+  Include every flow and decision point from both the Mermaid diagram and use case description.
+  Do not use ellipsis (...) or summarizing comments. Show the full code for each branch.
+  Represent all possible outcomes, including error cases or unexpected scenarios.
+  
+  
+  Coding style:
+  
+  Use clear, consistent indentation throughout.
+  Prefer if/else statements for branching logic, using else if for multiple conditions.
+  Always include a final 'else' statement to handle unexpected scenarios.
+  Use descriptive variable names matching entities in the Mermaid diagram and use case.
+  
+  
+  Console output:
+  
+  Use console.log statements for key actions and decisions at each step.
+  Ensure console.log statements accurately reflect the simulation's state and flow.
+  
+  
+  Code simplicity:
+  
+  Avoid unnecessary complexity. Do not include random number generation or external libraries.
+  Focus on representing the logic flow described in the Mermaid diagram and use case.
+  
+  
+  Output format:
+  
+  Provide only the JavaScript code without any introductory or concluding text.
+  Ensure the entire function is visible and not truncated.
+  
+  
+  
+  Example structure:
+  function eCommerceSimulation(scenario) {
+  console.log("User accesses e-commerce website");
+  console.log("System displays product catalog");
+  console.log("User browses catalog");
+  console.log("User selects items");
 
-Please adhere to the following guidelines:
-- Ensure that the function is named appropriately based on the simulation context (e.g., librarySimulation, eCommerceSimulation).
-- Each branch or flow in the Mermaid diagram should be represented by a corresponding if/else or switch/case block in the code.
-- The code should be concise and avoid unnecessary complexity. Only include the code necessary to simulate the flows described in the Mermaid diagram.
-- Use console.log statements to output key actions and decisions at each step.
-- The final output should contain only the JavaScript code—no introductory or concluding text.
-- No other additional things like math.random and stuff like that. Simple code so the test cases can run properly.
-- Make sure every single part of the mermaid code is in the javascript code don't miss anything. Be thorough.
-
-Make sure to generate the entire full code and ensure it is easy to follow. This is crucial. Don't include the intro or end stuff just the code. Just the code. 
-This is an example of what the code should look like. Should be structured like this. MAKE SURE THAT THE INDENTATIONS
-ARE CLEAR AND OBVIOUS SO WHEN THE TEST CASES RUN THEY CAN RUN PROPERLY. MAKE SURE EVERY SINGLE POSSIBLE FLOW IS REPRESENTED:
-function librarySimulation(scenario) {
-  console.log("User enters search criteria");
-  console.log("Library System displays matching books");
-  console.log("User selects desired book");
-  console.log("Library System checks book availability");
-
-  if (scenario === "book_unavailable" || scenario === "user_requests_hold") {
-    console.log("Book is not available");
-    console.log("Library System informs book unavailable");
-    console.log("Library System offers to place hold");
-    if (scenario === "user_requests_hold") {
-      console.log("User agrees to hold");
-      console.log("User requests hold");
-      console.log("Library System places hold on book");
-      console.log("Library System confirms hold placement");
+  if (scenario === "item_in_stock" || scenario === "proceed_to_checkout" || scenario === "modify_cart") {
+    console.log("Item in stock");
+    console.log("System adds items to cart");
+    if (scenario === "proceed_to_checkout" || scenario === "valid_address" || scenario === "invalid_address" || scenario === "payment_successful" || scenario === "payment_failed") {
+      console.log("User proceeds to checkout");
+      console.log("System prompts for shipping info");
+      console.log("User enters shipping info");
+      if (scenario === "valid_address" || scenario === "payment_successful" || scenario === "payment_failed") {
+        console.log("Valid address");
+        console.log("System presents payment methods");
+        console.log("User selects payment method");
+        console.log("User confirms purchase");
+        console.log("System processes payment");
+        if (scenario === "payment_successful") {
+          console.log("Payment successful");
+          console.log("System generates order confirmation");
+          console.log("System sends confirmation email");
+          console.log("System processes order");
+          if (scenario === "items_still_available" || scenario === "items_unavailable") {
+            if (scenario === "items_still_available") {
+              console.log("Items still available");
+              console.log("System notifies Shipping Service");
+              console.log("Shipping Service provides tracking number");
+              console.log("System sends tracking number to user");
+              console.log("User tracks shipment");
+              if (scenario === "user_requests_cancellation" || scenario === "order_cancellable" || scenario === "order_not_cancellable") {
+                console.log("User requests cancellation");
+                if (scenario === "order_cancellable") {
+                  console.log("Order cancellable");
+                  console.log("System cancels order and initiates refund");
+                  console.log("Use case ends in failure");
+                } else if (scenario === "order_not_cancellable") {
+                  console.log("Order not cancellable");
+                  console.log("System informs user order can't be cancelled");
+                  console.log("Shipping Service attempts delivery");
+                  if (scenario === "delivery_successful") {
+                    console.log("Delivery successful");
+                    console.log("Use case ends in success");
+                  } else if (scenario === "delivery_failed") {
+                    console.log("Delivery failed");
+                    console.log("System informs user of delivery issue");
+                    if (scenario === "user_updates_info") {
+                      console.log("User updates info");
+                      console.log("System sends tracking number to user");
+                    } else if (scenario === "user_requests_refund") {
+                      console.log("User requests refund");
+                      console.log("System processes refund");
+                      console.log("Use case ends in failure");
+                    }
+                  }
+                }
+              } else {
+                console.log("User does not request cancellation");
+                console.log("Shipping Service attempts delivery");
+                if (scenario === "delivery_successful") {
+                  console.log("Delivery successful");
+                  console.log("Use case ends in success");
+                } else if (scenario === "delivery_failed") {
+                  console.log("Delivery failed");
+                  console.log("System informs user of delivery issue");
+                  if (scenario === "user_updates_info") {
+                    console.log("User updates info");
+                    console.log("System sends tracking number to user");
+                  } else if (scenario === "user_requests_refund") {
+                    console.log("User requests refund");
+                    console.log("System processes refund");
+                    console.log("Use case ends in failure");
+                  }
+                }
+              }
+            } else if (scenario === "items_unavailable") {
+              console.log("Items unavailable");
+              console.log("System notifies user of unavailable items");
+              if (scenario === "user_continues_with_available") {
+                console.log("User continues with available items");
+                console.log("System adjusts order and issues partial refund");
+                console.log("System notifies Shipping Service");
+                console.log("Shipping Service provides tracking number");
+                console.log("System sends tracking number to user");
+                console.log("User tracks shipment");
+              } else if (scenario === "user_cancels_order") {
+                console.log("User cancels order");
+                console.log("System cancels order and issues full refund");
+                console.log("Use case ends in failure");
+              }
+            }
+          }
+        } else if (scenario === "payment_failed") {
+          console.log("Payment failed");
+          console.log("System informs user of payment failure");
+          if (scenario === "user_tries_another_method") {
+            console.log("User tries another method");
+            console.log("System presents payment methods");
+          } else if (scenario === "user_abandons_purchase") {
+            console.log("User abandons purchase");
+            console.log("Use case ends in failure");
+          }
+        }
+      } else if (scenario === "invalid_address") {
+        console.log("Invalid address");
+        console.log("User corrects shipping info");
+      }
+    } else if (scenario === "modify_cart") {
+      console.log("User modifies cart");
     }
-    return;
-  }
-
-  if (scenario === "invalid_scenario") {
+  } else if (scenario === "item_out_of_stock") {
+    console.log("Item out of stock");
+    console.log("System informs user item is out of stock");
+    if (scenario === "user_continues_shopping") {
+      console.log("User continues shopping");
+      console.log("User browses catalog");
+    } else if (scenario === "user_removes_item") {
+      console.log("User removes item");
+      console.log("System adds items to cart");
+    }
+  } else {
     console.log("Invalid scenario");
-    return;
-  }
-
-  console.log("Book is available");
-  console.log("User requests to borrow");
-  console.log("Library System verifies user eligibility");
-
-  if (scenario === "user_not_eligible") {
-    console.log("User is not eligible");
-    console.log("Library System informs of ineligibility");
-    return;
-  }
-
-  console.log("User is eligible");
-  console.log("Library System marks book as borrowed");
-  console.log("Library System confirms borrowing");
-  console.log("User takes book");
-  console.log("Time passes");
-  console.log("User returns book");
-  console.log("Library System verifies book and checks for fees");
-
-  if (scenario === "late_fees") {
-    console.log("Late fees applied");
-    console.log("Library System informs of late fees");
-    console.log("User pays late fees");
-  } else if (scenario === "no_late_fees") {
-    console.log("No late fees");
-  }
-
-  if (scenario !== "book_available" && scenario !== "user_eligible") {
-    console.log("Library System marks book as returned");
-    console.log("Library System confirms return");
   }
 }
-MAKE SURE THE CODE HAS ZERO ERRORS AND IS EASY TO FOLLOW. MAKE SURE THE INDENTATIONS ARE CLEAR AND OBVIOUS SO WHEN THE TEST CASES RUN THEY CAN RUN PROPERLY. Needs to be long and cover every possible flow. Should always end with an else statement. Usually like some sort of all else goes wrong. Make sure the indentations are clear. 
- This code needs to be good and clear. Make sure it is easy to follow and understand. It should be structured like this. MAKE SURE THAT THE INDENTATIONS are clear so that the test cases can follow them easily. Make sure the code is clear and easy to follow. Make sure every single part of the mermaid code is in the javascript code don't miss anything. Be thorough. THE ENTIRE CODE SHOULD SHOW. generate everything dont leave stuff blank or up to interpretation. Nothing like this:
-  console.log("User enters search criteria");
-    console.log("System displays search results");
-    // ... (same process as above for results found). SHOW ALL THE CODE
-Mermaid Markdown:
-${markdownToUse}`;
+
+This is another way to write the code:
+function cricketBallDeliverySimulation(scenario) {
+  console.log("Cricket match is in progress");
+  console.log("Bowler is ready to bowl");
+  console.log("Batter is at the crease");
+  console.log("Umpire is in position");
+  console.log("Bowler delivers the ball");
+  console.log("System registers the ball has been bowled");
+
+  switch (scenario) {
+    case "hit":
+      console.log("Batter decides to hit the ball");
+      console.log("Batter hits the ball");
+      console.log("System registers the ball has been hit");
+      console.log("Use Case ends in Success");
+      break;
+    case "leave":
+      console.log("Batter decides to leave the ball");
+      break;
+    case "miss":
+      console.log("Batter decides to miss the ball");
+      console.log("Batter misses the ball");
+      console.log("Ball continues past the batter");
+      break;
+    case "strikes_stumps":
+      console.log("Ball strikes the stumps");
+      console.log("Umpire declares the batter out");
+      console.log("System registers the batter as out");
+      console.log("Use Case ends in Success");
+      break;
+    case "strikes_body":
+      console.log("Ball strikes the batter's body");
+      console.log("Umpire assesses if the ball would have hit the stumps");
+      break;
+    case "would_hit_stumps":
+      console.log("Umpire determines the ball would have hit the stumps");
+      console.log("Umpire declares the batter out LBW (Leg Before Wicket)");
+      console.log("System registers the batter as out LBW");
+      console.log("Use Case ends in Success");
+      break;
+    case "would_not_hit_stumps":
+      console.log("Umpire determines the ball would not have hit the stumps");
+      console.log("Continue play");
+      console.log("Use Case ends in Success");
+      break;
+    case "passes_by":
+      console.log("Ball passes by without hitting stumps or batter");
+      console.log("Umpire assesses if the ball was too wide to hit");
+      break;
+    case "too_wide":
+      console.log("Umpire determines the ball was too wide to hit");
+      console.log("Umpire declares a wide ball");
+      console.log("System adds one run to the batting team's score");
+      console.log("System signals that the bowler must bowl another ball");
+      console.log("Use Case continues from Step 1");
+      break;
+    case "not_too_wide":
+      console.log("Umpire determines the ball was not too wide to hit");
+      console.log("System registers the ball as a legal delivery");
+      console.log("Use Case ends in Success");
+      break;
+    case "invalid_scenario":
+      console.log("Invalid batter decision scenario");
+      break;
+    case "invalid_outcome":
+      console.log("Invalid ball outcome scenario");
+      break;
+    case "invalid_lbw":
+      console.log("Invalid LBW assessment scenario");
+      break;
+    case "invalid_width":
+      console.log("Invalid width assessment scenario");
+      break;
+    default:
+      console.log("Invalid scenario");
+  }
+}
+  Ensure your code follows this structure, is complete, covers all possible flows from both the Mermaid diagram and use case description, and accurately represents the described simulation.
+  Use Case Description:
+  ${useCaseDescription}
+  Mermaid Markdown:
+  ${markdownToUse}`;
 
   try {
     // Call the Anthropic API to convert the Mermaid markdown to JavaScript code
@@ -302,321 +486,304 @@ IMPORTANT:
  THEY NEED TO BE ABLE TO EASILY RUN IN THIS CODE. IT SHOULD ONLY CREATE TESTS THAT SIMULATE THINGS HAPPENING IN THIS CODE STRUCUTRE. MAKE SURE THE EXPECTED OUTPUTS ARE CORRECT. 
 
  The code will be formatted like this:
- function librarySimulation(scenario) {
-  console.log("User enters search criteria");
-  console.log("Library System displays matching books");
-  console.log("User selects desired book");
-  console.log("Library System checks book availability");
+ function cricketBallDeliverySimulation(scenario) {
+  console.log("Cricket match is in progress");
+  console.log("Bowler is ready to bowl");
+  console.log("Batter is at the crease");
+  console.log("Umpire is in position");
+  console.log("Bowler delivers the ball");
+  console.log("System registers the ball has been bowled");
 
-  if (scenario === "book_unavailable" || scenario === "user_requests_hold") {
-    console.log("Book is not available");
-    console.log("Library System informs book unavailable");
-    console.log("Library System offers to place hold");
-    if (scenario === "user_requests_hold") {
-      console.log("User agrees to hold");
-      console.log("User requests hold");
-      console.log("Library System places hold on book");
-      console.log("Library System confirms hold placement");
-    }
-    return;
-  }
-
-  if (scenario === "invalid_scenario") {
-    console.log("Invalid scenario");
-    return;
-  }
-
-  console.log("Book is available");
-  console.log("User requests to borrow");
-  console.log("Library System verifies user eligibility");
-
-  if (scenario === "user_not_eligible") {
-    console.log("User is not eligible");
-    console.log("Library System informs of ineligibility");
-    return;
-  }
-
-  console.log("User is eligible");
-  console.log("Library System marks book as borrowed");
-  console.log("Library System confirms borrowing");
-  console.log("User takes book");
-  console.log("Time passes");
-  console.log("User returns book");
-  console.log("Library System verifies book and checks for fees");
-
-  if (scenario === "late_fees") {
-    console.log("Late fees applied");
-    console.log("Library System informs of late fees");
-    console.log("User pays late fees");
-  } else if (scenario === "no_late_fees") {
-    console.log("No late fees");
-  }
-
-  if (scenario !== "book_available" && scenario !== "user_eligible") {
-    console.log("Library System marks book as returned");
-    console.log("Library System confirms return");
+  switch (scenario) {
+    case "hit":
+      console.log("Batter decides to hit the ball");
+      console.log("Batter hits the ball");
+      console.log("System registers the ball has been hit");
+      console.log("Use Case ends in Success");
+      break;
+    case "leave":
+      console.log("Batter decides to leave the ball");
+      break;
+    case "miss":
+      console.log("Batter decides to miss the ball");
+      console.log("Batter misses the ball");
+      console.log("Ball continues past the batter");
+      break;
+    case "strikes_stumps":
+      console.log("Ball strikes the stumps");
+      console.log("Umpire declares the batter out");
+      console.log("System registers the batter as out");
+      console.log("Use Case ends in Success");
+      break;
+    case "strikes_body":
+      console.log("Ball strikes the batter's body");
+      console.log("Umpire assesses if the ball would have hit the stumps");
+      break;
+    case "would_hit_stumps":
+      console.log("Umpire determines the ball would have hit the stumps");
+      console.log("Umpire declares the batter out LBW (Leg Before Wicket)");
+      console.log("System registers the batter as out LBW");
+      console.log("Use Case ends in Success");
+      break;
+    case "would_not_hit_stumps":
+      console.log("Umpire determines the ball would not have hit the stumps");
+      console.log("Continue play");
+      console.log("Use Case ends in Success");
+      break;
+    case "passes_by":
+      console.log("Ball passes by without hitting stumps or batter");
+      console.log("Umpire assesses if the ball was too wide to hit");
+      break;
+    case "too_wide":
+      console.log("Umpire determines the ball was too wide to hit");
+      console.log("Umpire declares a wide ball");
+      console.log("System adds one run to the batting team's score");
+      console.log("System signals that the bowler must bowl another ball");
+      console.log("Use Case continues from Step 1");
+      break;
+    case "not_too_wide":
+      console.log("Umpire determines the ball was not too wide to hit");
+      console.log("System registers the ball as a legal delivery");
+      console.log("Use Case ends in Success");
+      break;
+    case "invalid_scenario":
+      console.log("Invalid batter decision scenario");
+      break;
+    case "invalid_outcome":
+      console.log("Invalid ball outcome scenario");
+      break;
+    case "invalid_lbw":
+      console.log("Invalid LBW assessment scenario");
+      break;
+    case "invalid_width":
+      console.log("Invalid width assessment scenario");
+      break;
+    default:
+      console.log("Invalid scenario");
   }
 }
-  SO the test cases should be like this:
-  // Test case for book available and user eligible
+}
+The test cases should be formatted something like this. Make sure that you model the test cases after the code so they always pass but cover everything thats in the code. 
+The expected output should only contain the syntax from the code. Nothing else. Every word must be the exact same. Dont add anything else to an expected output if its not in the code. This is very important. 
+Here are 20 test cases for the cricketBallDeliverySimulation function, covering all possible flows described in the code:
+
+// Test case for batter hitting the ball
 function testCase1() {
-  librarySimulation("book_available");
+  cricketBallDeliverySimulation("hit");
 }
 const expectedOutput1 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is available",
-  "User requests to borrow",
-  "Library System verifies user eligibility",
-  "User is eligible",
-  "Library System marks book as borrowed",
-  "Library System confirms borrowing",
-  "User takes book",
-  "Time passes",
-  "User returns book",
-  "Library System verifies book and checks for fees"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Batter decides to hit the ball",
+  "Batter hits the ball",
+  "System registers the ball has been hit",
+  "Use Case ends in Success"
 ];
 
-// Test case for book available, user eligible, and no late fees
+// Test case for batter leaving the ball
 function testCase2() {
-  librarySimulation("no_late_fees");
+  cricketBallDeliverySimulation("leave");
 }
 const expectedOutput2 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is available",
-  "User requests to borrow",
-  "Library System verifies user eligibility",
-  "User is eligible",
-  "Library System marks book as borrowed",
-  "Library System confirms borrowing",
-  "User takes book",
-  "Time passes",
-  "User returns book",
-  "Library System verifies book and checks for fees",
-  "No late fees",
-  "Library System marks book as returned",
-  "Library System confirms return"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Batter decides to leave the ball"
 ];
 
-// Test case for book available, user eligible, and late fees
+// Test case for batter missing the ball
 function testCase3() {
-  librarySimulation("late_fees");
+  cricketBallDeliverySimulation("miss");
 }
 const expectedOutput3 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is available",
-  "User requests to borrow",
-  "Library System verifies user eligibility",
-  "User is eligible",
-  "Library System marks book as borrowed",
-  "Library System confirms borrowing",
-  "User takes book",
-  "Time passes",
-  "User returns book",
-  "Library System verifies book and checks for fees",
-  "Late fees applied",
-  "Library System informs of late fees",
-  "User pays late fees",
-  "Library System marks book as returned",
-  "Library System confirms return"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Batter decides to miss the ball",
+  "Batter misses the ball",
+  "Ball continues past the batter"
 ];
 
-// Test case for book available but user not eligible
+// Test case for ball striking the stumps
 function testCase4() {
-  librarySimulation("user_not_eligible");
+  cricketBallDeliverySimulation("strikes_stumps");
 }
 const expectedOutput4 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is available",
-  "User requests to borrow",
-  "Library System verifies user eligibility",
-  "User is not eligible",
-  "Library System informs of ineligibility"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Ball strikes the stumps",
+  "Umpire declares the batter out",
+  "System registers the batter as out",
+  "Use Case ends in Success"
 ];
 
-// Test case for book unavailable
+// Test case for ball striking the batter's body
 function testCase5() {
-  librarySimulation("book_unavailable");
+  cricketBallDeliverySimulation("strikes_body");
 }
 const expectedOutput5 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is not available",
-  "Library System informs book unavailable",
-  "Library System offers to place hold"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Ball strikes the batter's body",
+  "Umpire assesses if the ball would have hit the stumps"
 ];
 
-// Test case for book unavailable and user requests hold
+// Test case for ball that would hit stumps (LBW)
 function testCase6() {
-  librarySimulation("user_requests_hold");
+  cricketBallDeliverySimulation("would_hit_stumps");
 }
 const expectedOutput6 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is not available",
-  "Library System informs book unavailable",
-  "Library System offers to place hold",
-  "User agrees to hold",
-  "User requests hold",
-  "Library System places hold on book",
-  "Library System confirms hold placement"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Umpire determines the ball would have hit the stumps",
+  "Umpire declares the batter out LBW (Leg Before Wicket)",
+  "System registers the batter as out LBW",
+  "Use Case ends in Success"
 ];
 
-// Test case for invalid scenario
+// Test case for ball that would not hit stumps
 function testCase7() {
-  librarySimulation("invalid_scenario");
+  cricketBallDeliverySimulation("would_not_hit_stumps");
 }
 const expectedOutput7 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Invalid scenario"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Umpire determines the ball would not have hit the stumps",
+  "Continue play",
+  "Use Case ends in Success"
 ];
 
-// Test case for book available and user eligible (duplicate of testCase1)
+// Test case for ball passing by without hitting stumps or batter
 function testCase8() {
-  librarySimulation("user_eligible");
+  cricketBallDeliverySimulation("passes_by");
 }
 const expectedOutput8 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is available",
-  "User requests to borrow",
-  "Library System verifies user eligibility",
-  "User is eligible",
-  "Library System marks book as borrowed",
-  "Library System confirms borrowing",
-  "User takes book",
-  "Time passes",
-  "User returns book",
-  "Library System verifies book and checks for fees"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Ball passes by without hitting stumps or batter",
+  "Umpire assesses if the ball was too wide to hit"
 ];
 
-// Test case for book available (duplicate of testCase1)
+// Test case for ball that is too wide
 function testCase9() {
-  librarySimulation("book_available");
+  cricketBallDeliverySimulation("too_wide");
 }
 const expectedOutput9 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is available",
-  "User requests to borrow",
-  "Library System verifies user eligibility",
-  "User is eligible",
-  "Library System marks book as borrowed",
-  "Library System confirms borrowing",
-  "User takes book",
-  "Time passes",
-  "User returns book",
-  "Library System verifies book and checks for fees"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Umpire determines the ball was too wide to hit",
+  "Umpire declares a wide ball",
+  "System adds one run to the batting team's score",
+  "System signals that the bowler must bowl another ball",
+  "Use Case continues from Step 1"
 ];
 
-// Test case for book available and user eligible (duplicate of testCase1)
+// Test case for ball that is not too wide
 function testCase10() {
-  librarySimulation("user_eligible");
+  cricketBallDeliverySimulation("not_too_wide");
 }
 const expectedOutput10 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is available",
-  "User requests to borrow",
-  "Library System verifies user eligibility",
-  "User is eligible",
-  "Library System marks book as borrowed",
-  "Library System confirms borrowing",
-  "User takes book",
-  "Time passes",
-  "User returns book",
-  "Library System verifies book and checks for fees"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Umpire determines the ball was not too wide to hit",
+  "System registers the ball as a legal delivery",
+  "Use Case ends in Success"
 ];
 
-// Test case for book available, user eligible, and no late fees (duplicate of testCase2)
+// Test case for invalid batter decision scenario
 function testCase11() {
-  librarySimulation("no_late_fees");
+  cricketBallDeliverySimulation("invalid_scenario");
 }
 const expectedOutput11 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is available",
-  "User requests to borrow",
-  "Library System verifies user eligibility",
-  "User is eligible",
-  "Library System marks book as borrowed",
-  "Library System confirms borrowing",
-  "User takes book",
-  "Time passes",
-  "User returns book",
-  "Library System verifies book and checks for fees",
-  "No late fees",
-  "Library System marks book as returned",
-  "Library System confirms return"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Invalid batter decision scenario"
 ];
 
-// Test case for book available, user eligible, and late fees (duplicate of testCase3)
+// Test case for invalid ball outcome scenario
 function testCase12() {
-  librarySimulation("late_fees");
+  cricketBallDeliverySimulation("invalid_outcome");
 }
 const expectedOutput12 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book",
-  "Library System checks book availability",
-  "Book is available",
-  "User requests to borrow",
-  "Library System verifies user eligibility",
-  "User is eligible",
-  "Library System marks book as borrowed",
-  "Library System confirms borrowing",
-  "User takes book",
-  "Time passes",
-  "User returns book",
-  "Library System verifies book and checks for fees",
-  "Late fees applied",
-  "Library System informs of late fees",
-  "User pays late fees",
-  "Library System marks book as returned",
-  "Library System confirms return"
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Invalid ball outcome scenario"
 ];
 
-// Test case for book available but user not eligible (duplicate of testCase4)
+// Test case for invalid LBW assessment scenario
 function testCase13() {
-  librarySimulation("user_not_eligible");
+  cricketBallDeliverySimulation("invalid_lbw");
 }
 const expectedOutput13 = [
-  "User enters search criteria",
-  "Library System displays matching books",
-  "User selects desired book
+  "Cricket match is in progress",
+  "Bowler is ready to bowl",
+  "Batter is at the crease",
+  "Umpire is in position",
+  "Bowler delivers the ball",
+  "System registers the ball has been bowled",
+  "Invalid LBW assessment scenario"
+];
+
+// Test case for invalid width assessment scenario
+function testCase14() {
+  cricketBallDeliverySimulation("invalid_width");
+}
+
+Make sure that the test cases only test the code and the stuff in the code, dont test scenarios that aren't present in the code. Look at the code very closely and make sure to line up the expected outputs. 
 }`;
+
 
   try {
     // Call the Anthropic API to generate the test cases
     const msg = await callAnthropicWithRetry(anthropic, {
       model: 'claude-3-5-sonnet-20240620', // Specify the model to use
-      max_tokens: 2000, // Limit the number of tokens in the response
+      max_tokens: 3000, // Limit the number of tokens in the response
       temperature: 0, // Set temperature for deterministic output
       system: prompt, // Use the prompt defined above as the system message
       messages: [
