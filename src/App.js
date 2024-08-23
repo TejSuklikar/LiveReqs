@@ -37,8 +37,8 @@ export default function App() {
         x: 100, // X position on the canvas
         y: 100, // Y position on the canvas
         props: {
-          w: 300, // Width of the shape
-          h: 150, // Height of the shape
+          w: 600, // Width of the shape
+          h: 200, // Height of the shape
           geo: 'rectangle', // Shape type (rectangle)
           color: 'black', // Border color
           fill: 'none', // Fill color (none)
@@ -87,7 +87,7 @@ export default function App() {
         {
           id: 'shape:usecasebox',
           type: 'geo',
-          x: 500,
+          x: 800,
           y: 100,
           props: {
             w: 700,
@@ -106,7 +106,7 @@ export default function App() {
         {
           id: 'shape:usecaselabel',
           type: 'text',
-          x: 500,
+          x: 800,
           y: 50,
           props: {
             text: 'Use Case',
@@ -188,7 +188,7 @@ export default function App() {
         {
           id: 'shape:markdownbox',
           type: 'geo',
-          x: 1300,
+          x: 1600,
           y: 100,
           props: {
             w: 700,
@@ -207,7 +207,7 @@ export default function App() {
         {
           id: 'shape:markdownlabel',
           type: 'text',
-          x: 1300,
+          x: 1600,
           y: 50,
           props: {
             text: 'Markdown',
@@ -296,7 +296,7 @@ export default function App() {
       {
         id: 'shape:codebox',
         type: 'geo',
-        x: 2100,
+        x: 2400,
         y: 100,
         props: {
           w: 700,
@@ -315,7 +315,7 @@ export default function App() {
       {
         id: 'shape:codelabel',
         type: 'text',
-        x: 2100,
+        x: 2400,
         y: 50,
         props: {
           text: 'Code',
@@ -404,7 +404,7 @@ const handleTestCasesClick = async () => {
       {
         id: 'shape:testcasebox',
         type: 'geo',
-        x: 2900,
+        x: 3200,
         y: 100,
         props: {
           w: 700,
@@ -423,7 +423,7 @@ const handleTestCasesClick = async () => {
       {
         id: 'shape:testcaselabel',
         type: 'text',
-        x: 2900,
+        x: 3200,
         y: 50,
         props: {
           text: 'Test Cases',
@@ -513,7 +513,7 @@ const handleTestCasesClick = async () => {
       {
         id: 'shape:resultsbox',
         type: 'geo',
-        x: 3700,
+        x: 4000,
         y: 100,
         props: {
           w: 700,
@@ -532,7 +532,7 @@ const handleTestCasesClick = async () => {
       {
         id: 'shape:resultslabel',
         type: 'text',
-        x: 3700,
+        x: 4000,
         y: 50,
         props: {
           text: 'Test Results',
