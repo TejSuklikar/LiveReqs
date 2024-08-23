@@ -444,6 +444,74 @@ Output format:
 Ensure that the generated code adheres to the structure and the guidelines above and is fully aligned with the expected outputs that will be verified through the test cases. Ensure that they way the code is structured, so that when its run on the test cases
 it's correctly branching for all the scenarios defined in the test cases. This is crucial. 
 
+Here's what the structure of the code should look like:
+function meetingRoomBookingSimulation(scenario) {
+  console.log("Start: User initiates meeting room booking process");
+
+  if (scenario === "successful_booking" || scenario === "room_unavailable" || scenario === "modify_time_slot") {
+    console.log("User logs in");
+    console.log("System authenticates the user");
+    console.log("System displays the booking interface");
+    console.log("User selects a room and time slot for the meeting");
+    console.log("System checks the availability of the selected room and time slot");
+
+    if (scenario === "successful_booking") {
+      console.log("System confirms the room is available");
+      console.log("System reserves the room for the user");
+      console.log("System sends a confirmation email to the user");
+      console.log("End - Success: Meeting room booked successfully");
+    } else if (scenario === "room_unavailable") {
+      console.log("System informs the user that the selected room is not available");
+      console.log("System offers alternative rooms or time slots");
+      console.log("User selects an alternative room or time slot");
+      console.log("System checks the availability of the selected room and time slot");
+      console.log("System confirms the room is available");
+      console.log("System reserves the room for the user");
+      console.log("System sends a confirmation email to the user");
+      console.log("End - Success: Meeting room booked successfully with alternative");
+    } else if (scenario === "modify_time_slot") {
+      console.log("User chooses to modify the time slot");
+      console.log("System prompts the user to select a new time slot");
+      console.log("User selects a new time slot");
+      console.log("System checks the availability of the selected room and time slot");
+      console.log("System confirms the room is available");
+      console.log("System reserves the room for the user");
+      console.log("System sends a confirmation email to the user");
+      console.log("End - Success: Meeting room booked successfully with modified time slot");
+    }
+  } else if (scenario === "login_failure") {
+    console.log("User logs in");
+    console.log("System displays an error message");
+    console.log("System prompts the user to re-enter credentials");
+    console.log("User re-enters login credentials");
+    console.log("System displays an error message");
+    console.log("System prompts the user to contact support");
+    console.log("End - Failure: Unable to log in");
+  } else if (scenario === "access_restriction") {
+    console.log("User logs in");
+    console.log("System authenticates the user");
+    console.log("System informs the user of access restrictions");
+    console.log("System prompts the user to contact support for assistance");
+    console.log("End - Failure: User has access restrictions");
+  } else if (scenario === "cancel_reservation") {
+    console.log("User logs in");
+    console.log("System authenticates the user");
+    console.log("System displays the booking interface");
+    console.log("User selects the option to view current bookings");
+    console.log("System displays the user's current bookings");
+    console.log("User selects the booking to cancel");
+    console.log("System prompts for confirmation of cancellation");
+    console.log("User confirms the cancellation");
+    console.log("System cancels the reservation");
+    console.log("System sends a cancellation confirmation to the user");
+    console.log("End - Success: Reservation cancelled successfully");
+  } else {
+    console.log("Invalid scenario");
+    console.log("End - Failure: Unknown scenario");
+  }
+}
+  Make sure to make the indents clear
+
 Use Case Description:
 ${useCaseDescription}
 Mermaid Markdown:
@@ -505,18 +573,414 @@ IMPORTANT:
 
 Example structure of a test case:
 
-// Test case for specific scenario
-function testCaseX() {
-  simulationFunction("specific_scenario");
+Dont have the "here are 20 cases" stuff. Just the cases. Below is the example code that was generated and the cases that were created. Look at how 
+the cases follow exactly the code and different paths the code takes. This should be the standard for every single time test cases
+are created. 
+
+Code: 
+function meetingRoomBookingSimulation(scenario) {
+  console.log("Start: User initiates meeting room booking process");
+
+  if (scenario === "successful_booking" || scenario === "room_unavailable" || scenario === "modify_time_slot") {
+    console.log("User logs in");
+    console.log("System authenticates the user");
+    console.log("System displays the booking interface");
+    console.log("User selects a room and time slot for the meeting");
+    console.log("System checks the availability of the selected room and time slot");
+
+    if (scenario === "successful_booking") {
+      console.log("System confirms the room is available");
+      console.log("System reserves the room for the user");
+      console.log("System sends a confirmation email to the user");
+      console.log("End - Success: Meeting room booked successfully");
+    } else if (scenario === "room_unavailable") {
+      console.log("System informs the user that the selected room is not available");
+      console.log("System offers alternative rooms or time slots");
+      console.log("User selects an alternative room or time slot");
+      console.log("System checks the availability of the selected room and time slot");
+      console.log("System confirms the room is available");
+      console.log("System reserves the room for the user");
+      console.log("System sends a confirmation email to the user");
+      console.log("End - Success: Meeting room booked successfully with alternative");
+    } else if (scenario === "modify_time_slot") {
+      console.log("User chooses to modify the time slot");
+      console.log("System prompts the user to select a new time slot");
+      console.log("User selects a new time slot");
+      console.log("System checks the availability of the selected room and time slot");
+      console.log("System confirms the room is available");
+      console.log("System reserves the room for the user");
+      console.log("System sends a confirmation email to the user");
+      console.log("End - Success: Meeting room booked successfully with modified time slot");
+    }
+  } else if (scenario === "login_failure") {
+    console.log("User logs in");
+    console.log("System displays an error message");
+    console.log("System prompts the user to re-enter credentials");
+    console.log("User re-enters login credentials");
+    console.log("System displays an error message");
+    console.log("System prompts the user to contact support");
+    console.log("End - Failure: Unable to log in");
+  } else if (scenario === "access_restriction") {
+    console.log("User logs in");
+    console.log("System authenticates the user");
+    console.log("System informs the user of access restrictions");
+    console.log("System prompts the user to contact support for assistance");
+    console.log("End - Failure: User has access restrictions");
+  } else if (scenario === "cancel_reservation") {
+    console.log("User logs in");
+    console.log("System authenticates the user");
+    console.log("System displays the booking interface");
+    console.log("User selects the option to view current bookings");
+    console.log("System displays the user's current bookings");
+    console.log("User selects the booking to cancel");
+    console.log("System prompts for confirmation of cancellation");
+    console.log("User confirms the cancellation");
+    console.log("System cancels the reservation");
+    console.log("System sends a cancellation confirmation to the user");
+    console.log("End - Success: Reservation cancelled successfully");
+  } else {
+    console.log("Invalid scenario");
+    console.log("End - Failure: Unknown scenario");
+  }
 }
-const expectedOutputX = [
-  "Exact console output as expected from the code",
-  "Another line of exact console output",
-  "Final line of expected console output"
+
+// Test case for successful booking
+function testCase1() {
+  meetingRoomBookingSimulation("successful_booking");
+}
+const expectedOutput1 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects a room and time slot for the meeting",
+  "System checks the availability of the selected room and time slot",
+  "System confirms the room is available",
+  "System reserves the room for the user",
+  "System sends a confirmation email to the user",
+  "End - Success: Meeting room booked successfully"
 ];
 
-// Continue this pattern for all 20 test cases, ensuring complete coverage of the simulation code. Even if they are redundant include at least 20. 
+// Test case for room unavailable
+function testCase2() {
+  meetingRoomBookingSimulation("room_unavailable");
+}
+const expectedOutput2 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects a room and time slot for the meeting",
+  "System checks the availability of the selected room and time slot",
+  "System informs the user that the selected room is not available",
+  "System offers alternative rooms or time slots",
+  "User selects an alternative room or time slot",
+  "System checks the availability of the selected room and time slot",
+  "System confirms the room is available",
+  "System reserves the room for the user",
+  "System sends a confirmation email to the user",
+  "End - Success: Meeting room booked successfully with alternative"
+];
 
+// Test case for modifying time slot
+function testCase3() {
+  meetingRoomBookingSimulation("modify_time_slot");
+}
+const expectedOutput3 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects a room and time slot for the meeting",
+  "System checks the availability of the selected room and time slot",
+  "User chooses to modify the time slot",
+  "System prompts the user to select a new time slot",
+  "User selects a new time slot",
+  "System checks the availability of the selected room and time slot",
+  "System confirms the room is available",
+  "System reserves the room for the user",
+  "System sends a confirmation email to the user",
+  "End - Success: Meeting room booked successfully with modified time slot"
+];
+
+// Test case for login failure
+function testCase4() {
+  meetingRoomBookingSimulation("login_failure");
+}
+const expectedOutput4 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System displays an error message",
+  "System prompts the user to re-enter credentials",
+  "User re-enters login credentials",
+  "System displays an error message",
+  "System prompts the user to contact support",
+  "End - Failure: Unable to log in"
+];
+
+// Test case for access restriction
+function testCase5() {
+  meetingRoomBookingSimulation("access_restriction");
+}
+const expectedOutput5 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System informs the user of access restrictions",
+  "System prompts the user to contact support for assistance",
+  "End - Failure: User has access restrictions"
+];
+
+// Test case for cancelling reservation
+function testCase6() {
+  meetingRoomBookingSimulation("cancel_reservation");
+}
+const expectedOutput6 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects the option to view current bookings",
+  "System displays the user's current bookings",
+  "User selects the booking to cancel",
+  "System prompts for confirmation of cancellation",
+  "User confirms the cancellation",
+  "System cancels the reservation",
+  "System sends a cancellation confirmation to the user",
+  "End - Success: Reservation cancelled successfully"
+];
+
+// Test case for invalid scenario
+function testCase7() {
+  meetingRoomBookingSimulation("invalid_scenario");
+}
+const expectedOutput7 = [
+  "Start: User initiates meeting room booking process",
+  "Invalid scenario",
+  "End - Failure: Unknown scenario"
+];
+
+// Test case for successful booking (redundant)
+function testCase8() {
+  meetingRoomBookingSimulation("successful_booking");
+}
+const expectedOutput8 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects a room and time slot for the meeting",
+  "System checks the availability of the selected room and time slot",
+  "System confirms the room is available",
+  "System reserves the room for the user",
+  "System sends a confirmation email to the user",
+  "End - Success: Meeting room booked successfully"
+];
+
+// Test case for room unavailable (redundant)
+function testCase9() {
+  meetingRoomBookingSimulation("room_unavailable");
+}
+const expectedOutput9 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects a room and time slot for the meeting",
+  "System checks the availability of the selected room and time slot",
+  "System informs the user that the selected room is not available",
+  "System offers alternative rooms or time slots",
+  "User selects an alternative room or time slot",
+  "System checks the availability of the selected room and time slot",
+  "System confirms the room is available",
+  "System reserves the room for the user",
+  "System sends a confirmation email to the user",
+  "End - Success: Meeting room booked successfully with alternative"
+];
+
+// Test case for modifying time slot (redundant)
+function testCase10() {
+  meetingRoomBookingSimulation("modify_time_slot");
+}
+const expectedOutput10 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects a room and time slot for the meeting",
+  "System checks the availability of the selected room and time slot",
+  "User chooses to modify the time slot",
+  "System prompts the user to select a new time slot",
+  "User selects a new time slot",
+  "System checks the availability of the selected room and time slot",
+  "System confirms the room is available",
+  "System reserves the room for the user",
+  "System sends a confirmation email to the user",
+  "End - Success: Meeting room booked successfully with modified time slot"
+];
+
+// Test case for login failure (redundant)
+function testCase11() {
+  meetingRoomBookingSimulation("login_failure");
+}
+const expectedOutput11 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System displays an error message",
+  "System prompts the user to re-enter credentials",
+  "User re-enters login credentials",
+  "System displays an error message",
+  "System prompts the user to contact support",
+  "End - Failure: Unable to log in"
+];
+
+// Test case for access restriction (redundant)
+function testCase12() {
+  meetingRoomBookingSimulation("access_restriction");
+}
+const expectedOutput12 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System informs the user of access restrictions",
+  "System prompts the user to contact support for assistance",
+  "End - Failure: User has access restrictions"
+];
+
+// Test case for cancelling reservation (redundant)
+function testCase13() {
+  meetingRoomBookingSimulation("cancel_reservation");
+}
+const expectedOutput13 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects the option to view current bookings",
+  "System displays the user's current bookings",
+  "User selects the booking to cancel",
+  "System prompts for confirmation of cancellation",
+  "User confirms the cancellation",
+  "System cancels the reservation",
+  "System sends a cancellation confirmation to the user",
+  "End - Success: Reservation cancelled successfully"
+];
+
+// Test case for invalid scenario (redundant)
+function testCase14() {
+  meetingRoomBookingSimulation("another_invalid_scenario");
+}
+const expectedOutput14 = [
+  "Start: User initiates meeting room booking process",
+  "Invalid scenario",
+  "End - Failure: Unknown scenario"
+];
+
+// Test case for successful booking (redundant)
+function testCase15() {
+  meetingRoomBookingSimulation("successful_booking");
+}
+const expectedOutput15 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects a room and time slot for the meeting",
+  "System checks the availability of the selected room and time slot",
+  "System confirms the room is available",
+  "System reserves the room for the user",
+  "System sends a confirmation email to the user",
+  "End - Success: Meeting room booked successfully"
+];
+
+// Test case for room unavailable (redundant)
+function testCase16() {
+  meetingRoomBookingSimulation("room_unavailable");
+}
+const expectedOutput16 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects a room and time slot for the meeting",
+  "System checks the availability of the selected room and time slot",
+  "System informs the user that the selected room is not available",
+  "System offers alternative rooms or time slots",
+  "User selects an alternative room or time slot",
+  "System checks the availability of the selected room and time slot",
+  "System confirms the room is available",
+  "System reserves the room for the user",
+  "System sends a confirmation email to the user",
+  "End - Success: Meeting room booked successfully with alternative"
+];
+
+// Test case for modifying time slot (redundant)
+function testCase17() {
+  meetingRoomBookingSimulation("modify_time_slot");
+}
+const expectedOutput17 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects a room and time slot for the meeting",
+  "System checks the availability of the selected room and time slot",
+  "User chooses to modify the time slot",
+  "System prompts the user to select a new time slot",
+  "User selects a new time slot",
+  "System checks the availability of the selected room and time slot",
+  "System confirms the room is available",
+  "System reserves the room for the user",
+  "System sends a confirmation email to the user",
+  "End - Success: Meeting room booked successfully with modified time slot"
+];
+
+// Test case for login failure (redundant)
+function testCase18() {
+  meetingRoomBookingSimulation("login_failure");
+}
+const expectedOutput18 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System displays an error message",
+  "System prompts the user to re-enter credentials",
+  "User re-enters login credentials",
+  "System displays an error message",
+  "System prompts the user to contact support",
+  "End - Failure: Unable to log in"
+];
+
+// Test case for access restriction (redundant)
+function testCase19() {
+  meetingRoomBookingSimulation("access_restriction");
+}
+const expectedOutput19 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System informs the user of access restrictions",
+  "System prompts the user to contact support for assistance",
+  "End - Failure: User has access restrictions"
+];
+
+// Test case for cancelling reservation (redundant)
+function testCase20() {
+  meetingRoomBookingSimulation("cancel_reservation");
+}
+const expectedOutput20 = [
+  "Start: User initiates meeting room booking process",
+  "User logs in",
+  "System authenticates the user",
+  "System displays the booking interface",
+  "User selects the option to view current bookings",
+  "System displays the user's current bookings",
+  "User selects the booking to cancel",
+  "System prompts for confirmation of cancellation",
+  "User confirms the cancellation",
+  "System cancels the reservation",
+  "System sends a cancellation confirmation to the user",
+  "End - Success: Reservation cancelled successfully"
+];
 Make sure that the test cases only test the code and the stuff in the code, dont test scenarios that aren't present in the code. Look at the code very closely and make sure to line up the expected outputs. 
 }`;
 
