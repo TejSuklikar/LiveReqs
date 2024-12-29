@@ -1,21 +1,12 @@
 import React, { useState } from 'react';
-import '@tldraw/tldraw/tldraw.css';
-import axios from 'axios';
-import {components} from './CustomComponents';
-import { Tldraw } from '@tldraw/tldraw';
+import '@tldraw/tldraw/tldraw.css';  // Tldraw base styling
+import TldrawCanvas from './TLDrawCanvas';
+import ButtonsPanel from './ButtonsPanel';
 
 export default function App() {
-  // State to hold the Tldraw editor instance
-  const [editor, setEditor] = useState(null);
-  // State to hold the description input by the user
-  const [description, setDescription] = useState('');
-  // States to control the visibility of different boxes
-  const [showUseCaseBox, setShowUseCaseBox] = useState(false);
-  const [showDiagramBox, setShowDiagramBox] = useState(false);
-  const [showCodeBox, setShowCodeBox] = useState(false);
-  const [showTestCasesBox, setShowTestCasesBox] = useState(false);
-  const [showResultsBox, setShowResultsBox] = useState(false);
-  // State to hold any notification messages
+  // Top-level state
+  const [editor, setEditor] = useState(null);       // Reference to Tldraw editor
+  const [description, setDescription] = useState(''); 
   const [notification, setNotification] = useState(null);
   // State to hold the API key entered by the user
   const [apiKey, setApiKey] = useState('');
@@ -37,8 +28,8 @@ export default function App() {
         x: 100, // X position on the canvas
         y: 100, // Y position on the canvas
         props: {
-          w: 600, // Width of the shape
-          h: 200, // Height of the shape
+          w: 300, // Width of the shape
+          h: 150, // Height of the shape
           geo: 'rectangle', // Shape type (rectangle)
           color: 'black', // Border color
           fill: 'none', // Fill color (none)
@@ -87,7 +78,7 @@ export default function App() {
         {
           id: 'shape:usecasebox',
           type: 'geo',
-          x: 800,
+          x: 500,
           y: 100,
           props: {
             w: 700,
@@ -106,7 +97,7 @@ export default function App() {
         {
           id: 'shape:usecaselabel',
           type: 'text',
-          x: 800,
+          x: 500,
           y: 50,
           props: {
             text: 'Use Case',
@@ -188,7 +179,7 @@ export default function App() {
         {
           id: 'shape:markdownbox',
           type: 'geo',
-          x: 1600,
+          x: 1300,
           y: 100,
           props: {
             w: 700,
@@ -207,7 +198,7 @@ export default function App() {
         {
           id: 'shape:markdownlabel',
           type: 'text',
-          x: 1600,
+          x: 1300,
           y: 50,
           props: {
             text: 'Markdown',
@@ -296,7 +287,7 @@ export default function App() {
       {
         id: 'shape:codebox',
         type: 'geo',
-        x: 2400,
+        x: 2100,
         y: 100,
         props: {
           w: 700,
@@ -315,7 +306,7 @@ export default function App() {
       {
         id: 'shape:codelabel',
         type: 'text',
-        x: 2400,
+        x: 2100,
         y: 50,
         props: {
           text: 'Code',
@@ -404,7 +395,7 @@ const handleTestCasesClick = async () => {
       {
         id: 'shape:testcasebox',
         type: 'geo',
-        x: 3200,
+        x: 2900,
         y: 100,
         props: {
           w: 700,
@@ -423,7 +414,7 @@ const handleTestCasesClick = async () => {
       {
         id: 'shape:testcaselabel',
         type: 'text',
-        x: 3200,
+        x: 2900,
         y: 50,
         props: {
           text: 'Test Cases',
@@ -513,7 +504,7 @@ const handleTestCasesClick = async () => {
       {
         id: 'shape:resultsbox',
         type: 'geo',
-        x: 4000,
+        x: 3700,
         y: 100,
         props: {
           w: 700,
@@ -532,7 +523,7 @@ const handleTestCasesClick = async () => {
       {
         id: 'shape:resultslabel',
         type: 'text',
-        x: 4000,
+        x: 3700,
         y: 50,
         props: {
           text: 'Test Results',
@@ -673,139 +664,40 @@ const handleFileChange = (event) => {
 
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
-      {/* The main container that occupies the entire viewport */}
-      <Tldraw 
-      components={components} 
-      onMount={onMount}
+      {/* The Tldraw canvas */}
+      <TldrawCanvas
+        editor={editor}
+        setEditor={setEditor}
+        description={description}
+        setDescription={setDescription}
       />
-      {/* Hidden file input for opening .tldr files */}
-      <input
-        type="file"
-        id="fileInput"
-        accept=".tldr"
-        style={{ display: 'none' }}
-        onChange={handleFileChange}
-      />
-      <div style={{
-        position: 'absolute',
-        bottom: '50px',
-        right: '20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        zIndex: 1000,
-      }}>
-        {/* Input field for entering the API key */}
-        <input
-          type="password"
-          placeholder="Enter API Key"
-          value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
-          style={{
-            padding: '20px',
-            borderRadius: '5px',
-            border: '3px solid #000',
-            marginBottom: '10px',
-            color: '#000',
-          }}
-        />
-        {/* Button to generate the use case, disabled if no API key is entered */}
-        <button
-          style={{
-            backgroundColor: 'blue',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            padding: '10px 20px',
-            cursor: apiKey ? 'pointer' : 'not-allowed',
-            whiteSpace: 'nowrap',
-          }}
-          onClick={handleGoClick}
-          disabled={!apiKey}
-        >
-          Generate Use Case
-        </button>
-        {/* Button to generate the Mermaid markdown, disabled if no API key is entered */}
-        <button
-          style={{
-            backgroundColor: 'purple',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            padding: '10px 20px',
-            cursor: apiKey ? 'pointer' : 'not-allowed',
-            whiteSpace: 'nowrap',
-          }}
-          onClick={handleGenerateMermaidMarkdownClick}
-          disabled={!apiKey}
-        >
-          Generate Markdown
-        </button>
-        {/* Button to generate the JavaScript code, disabled if no API key is entered */}
-        <button
-          style={{
-            backgroundColor: 'red',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            padding: '10px 20px',
-            cursor: apiKey ? 'pointer' : 'not-allowed',
-            whiteSpace: 'nowrap',
-          }}
-          onClick={handleGenerateCodeClick}
-          disabled={!apiKey}
-        >
-          Generate JavaScript Code
-        </button>
-        {/* Button to generate the test cases, disabled if no API key is entered */}
-        <button
-          style={{
-            backgroundColor: 'green',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            padding: '10px 20px',
-            cursor: apiKey ? 'pointer' : 'not-allowed',
-            whiteSpace: 'nowrap',
-          }}
-          onClick={handleTestCasesClick}
-          disabled={!apiKey}
-        >
-          Generate Test Cases
-        </button>
-        {/* Button to run the tests, disabled if no API key is entered */}
-        <button
-          style={{
-            backgroundColor: 'orange',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            padding: '10px 20px',
-            cursor: apiKey ? 'pointer' : 'not-allowed',
-            whiteSpace: 'nowrap',
-          }}
-          onClick={handleRunTestsClick}
-          disabled={!apiKey}
-        >
-          Run Tests
-        </button>
-      </div>
-      
+
+      {/* Notification banner if needed */}
       {notification && (
-        <div style={{
-          position: 'absolute',
-          top: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: 'yellow',
-          padding: '10px',
-          borderRadius: '5px',
-          zIndex: 1001,
-        }}>
-          {/* Display a notification if there is one */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'yellow',
+            padding: '10px',
+            borderRadius: '5px',
+            zIndex: 1001,
+          }}
+        >
           {notification}
         </div>
       )}
+
+      {/* Panel of buttons and their logic */}
+      <ButtonsPanel
+        editor={editor}
+        description={description}
+        setDescription={setDescription}
+        notification={notification}
+        setNotification={setNotification}
+      />
     </div>
   );
 }

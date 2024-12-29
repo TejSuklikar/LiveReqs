@@ -109,7 +109,7 @@ app.post('/api/diagram', async (req, res) => {
   in the use case description and they are neccesary still add them. Be very thorough. 
   Lets say this was the description: A customer contacts support through various channels (phone, email, chat). The issue is logged, and initial troubleshooting is provided. If unresolved, it's escalated to a specialist. The specialist diagnoses and provides a solution. The customer is informed and asked to confirm the resolution. If resolved, the case is closed; if not, it returns for further troubleshooting. The customer can provide feedback on the support experience, which is reviewed for service improvement.
   And this was the Use Case Description: 
-  Use Case: 
+Use Case: 
 Pre-conditions:
 
 Customer support system is operational
