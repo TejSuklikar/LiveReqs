@@ -16,8 +16,17 @@ export default function ButtonsPanel({
   const [isTestCasesLoading, setIsTestCasesLoading] = useState(false);
   const [isResultsLoading, setIsResultsLoading] = useState(false);
 
-  // Helper to check if a shape with ID shapeId exists
+  // Helper: Check if a shape with a given ID exists
   const shapeExists = (shapeId) => editor && editor.getShape(shapeId) !== undefined;
+
+  // Helper: Zoom to all shapes in the current scene
+  // by selecting them, zooming to that selection, then clearing selection.
+  const zoomToAllShapes = () => {
+    if (!editor) return;
+    editor.selectAll();        // select every shape
+    editor.zoomToSelection();  // zoom to that selection
+    editor.selectNone();       // clear selection so you don't leave everything "highlighted"
+  };
 
   // ----------------------------
   // 1) Generate Use Case
@@ -72,7 +81,6 @@ export default function ButtonsPanel({
     }
 
     if (description.trim() === '' || description === 'Type here...') {
-      // Reset if empty
       editor.updateShapes([
         {
           id: 'shape:1',
@@ -84,8 +92,8 @@ export default function ButtonsPanel({
     } else {
       try {
         const response = await axios.post('http://localhost:5001/api/usecase', {
-          description: description,
-          apiKey: apiKey,
+          description,
+          apiKey,
         });
         useCaseDescription = response.data.completion || 'Use Case Description';
       } catch (error) {
@@ -94,7 +102,7 @@ export default function ButtonsPanel({
       }
     }
 
-    // Update final text
+    // Update the final text
     if (shapeExists('shape:usecasebox')) {
       editor.updateShapes([
         {
@@ -109,6 +117,9 @@ export default function ButtonsPanel({
       ]);
     }
     setIsUseCaseLoading(false);
+
+    // Auto-fit all shapes on screen
+    zoomToAllShapes();
   };
 
   // ----------------------------
@@ -118,7 +129,6 @@ export default function ButtonsPanel({
     setIsDiagramLoading(true);
     let diagram = 'Mermaid Markdown Generating...';
 
-    // Create or update the "markdown" shape
     if (!shapeExists('shape:markdownbox')) {
       editor.createShapes([
         {
@@ -200,6 +210,8 @@ export default function ButtonsPanel({
       ]);
     }
     setIsDiagramLoading(false);
+
+    zoomToAllShapes();
   };
 
   // ----------------------------
@@ -290,6 +302,8 @@ export default function ButtonsPanel({
       ]);
     }
     setIsCodeLoading(false);
+
+    zoomToAllShapes();
   };
 
   // ----------------------------
@@ -376,6 +390,8 @@ export default function ButtonsPanel({
       ]);
     }
     setIsTestCasesLoading(false);
+
+    zoomToAllShapes();
   };
 
   // ----------------------------
@@ -456,7 +472,6 @@ export default function ButtonsPanel({
         console.log('Sending code:', code);
         console.log('Sending test cases:', testCases);
 
-        // Send them to the backend for execution
         const response = await axios.post('http://localhost:5001/api/runtests', {
           code,
           testCases,
@@ -479,6 +494,8 @@ export default function ButtonsPanel({
       ]);
     }
     setIsResultsLoading(false);
+
+    zoomToAllShapes();
   };
 
   // Same helper function as in your original code
@@ -506,7 +523,6 @@ export default function ButtonsPanel({
     return testCases;
   }
 
-  // Render the actual panel with the 5 buttons + API key input
   return (
     <div
       style={{

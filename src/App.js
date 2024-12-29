@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '@tldraw/tldraw/tldraw.css';  // Tldraw base styling
-import TldrawCanvas from './components/TldrawCanvas';
-import ButtonsPanel from './components/ButtonsPanel';
+import TldrawCanvas from './TLDrawCanvas';
+import ButtonsPanel from './ButtonsPanel';
 
 export default function App() {
   // Top-level state
