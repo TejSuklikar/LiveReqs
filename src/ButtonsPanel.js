@@ -21,12 +21,20 @@ export default function ButtonsPanel({
 
   // Helper: Zoom to all shapes in the current scene
   // by selecting them, zooming to that selection, then clearing selection.
-  const zoomToAllShapes = () => {
+  const zoomOut = () => {
     if (!editor) return;
-    editor.selectAll();        // select every shape
-    editor.zoomToSelection();  // zoom to that selection
-    editor.selectNone();       // clear selection so you don't leave everything "highlighted"
-  };
+
+    // Get the current camera state
+    const { x, y, z } = editor.getCamera();
+
+    // Calculate new zoom level (reduce by 10%)
+    const newZoom = z * 0.85;
+
+    // Update the camera with the new zoom level
+    editor.setCamera({ x, y, z: newZoom });
+};
+
+
 
   // ----------------------------
   // 1) Generate Use Case
@@ -41,11 +49,11 @@ export default function ButtonsPanel({
         {
           id: 'shape:usecasebox',
           type: 'geo',
-          x: 800,
-          y: 100,
+          x: 430,
+          y: 200,
           props: {
-            w: 700,
-            h: 600,
+            w: 450,
+            h: 550,
             geo: 'rectangle',
             color: 'black',
             fill: 'none',
@@ -60,8 +68,8 @@ export default function ButtonsPanel({
         {
           id: 'shape:usecaselabel',
           type: 'text',
-          x: 800,
-          y: 50,
+          x: 500,
+          y: 150,
           props: {
             text: 'Use Case',
             size: 'l',
@@ -119,7 +127,7 @@ export default function ButtonsPanel({
     setIsUseCaseLoading(false);
 
     // Auto-fit all shapes on screen
-    zoomToAllShapes();
+    zoomOut();
   };
 
   // ----------------------------
@@ -134,10 +142,10 @@ export default function ButtonsPanel({
         {
           id: 'shape:markdownbox',
           type: 'geo',
-          x: 1600,
-          y: 100,
+          x: 900,
+          y: 200,
           props: {
-            w: 700,
+            w: 500,
             h: 600,
             geo: 'rectangle',
             color: 'black',
@@ -153,8 +161,8 @@ export default function ButtonsPanel({
         {
           id: 'shape:markdownlabel',
           type: 'text',
-          x: 1600,
-          y: 50,
+          x: 1000,
+          y: 150,
           props: {
             text: 'Markdown',
             size: 'l',
@@ -211,7 +219,7 @@ export default function ButtonsPanel({
     }
     setIsDiagramLoading(false);
 
-    zoomToAllShapes();
+    zoomOut();
   };
 
   // ----------------------------
@@ -226,10 +234,10 @@ export default function ButtonsPanel({
         {
           id: 'shape:codebox',
           type: 'geo',
-          x: 2400,
-          y: 100,
+          x: 1420,
+          y: 200,
           props: {
-            w: 700,
+            w: 580,
             h: 600,
             geo: 'rectangle',
             color: 'black',
@@ -245,8 +253,8 @@ export default function ButtonsPanel({
         {
           id: 'shape:codelabel',
           type: 'text',
-          x: 2400,
-          y: 50,
+          x: 1600,
+          y: 150,
           props: {
             text: 'Code',
             size: 'l',
@@ -303,7 +311,7 @@ export default function ButtonsPanel({
     }
     setIsCodeLoading(false);
 
-    zoomToAllShapes();
+    zoomOut();
   };
 
   // ----------------------------
@@ -318,10 +326,10 @@ export default function ButtonsPanel({
         {
           id: 'shape:testcasebox',
           type: 'geo',
-          x: 3200,
-          y: 100,
+          x: 2020,
+          y: 200,
           props: {
-            w: 700,
+            w: 650,
             h: 600,
             geo: 'rectangle',
             color: 'black',
@@ -337,8 +345,8 @@ export default function ButtonsPanel({
         {
           id: 'shape:testcaselabel',
           type: 'text',
-          x: 3200,
-          y: 50,
+          x: 2200,
+          y: 150,
           props: {
             text: 'Test Cases',
             size: 'l',
@@ -391,7 +399,7 @@ export default function ButtonsPanel({
     }
     setIsTestCasesLoading(false);
 
-    zoomToAllShapes();
+    zoomOut();
   };
 
   // ----------------------------
@@ -406,10 +414,10 @@ export default function ButtonsPanel({
         {
           id: 'shape:resultsbox',
           type: 'geo',
-          x: 4000,
-          y: 100,
+          x: 2690,
+          y: 200,
           props: {
-            w: 700,
+            w: 650,
             h: 600,
             geo: 'rectangle',
             color: 'black',
@@ -425,8 +433,8 @@ export default function ButtonsPanel({
         {
           id: 'shape:resultslabel',
           type: 'text',
-          x: 4000,
-          y: 50,
+          x: 2900,
+          y: 150,
           props: {
             text: 'Test Results',
             size: 'l',
@@ -495,10 +503,9 @@ export default function ButtonsPanel({
     }
     setIsResultsLoading(false);
 
-    zoomToAllShapes();
+    zoomOut();
   };
 
-  // Same helper function as in your original code
   function parseTestCases(testCasesText, simulationFunctionName) {
     const testCases = [];
     const testCaseRegex = new RegExp(
@@ -621,7 +628,7 @@ export default function ButtonsPanel({
       {/* Run Tests */}
       <button
         style={{
-          backgroundColor: 'orange',
+          backgroundColor: 'darkorange',
           color: 'white',
           border: 'none',
           borderRadius: '5px',
