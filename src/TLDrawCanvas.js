@@ -12,11 +12,11 @@ export default function TldrawCanvas({ editor, setEditor, description, setDescri
       {
         id: 'shape:1',
         type: 'geo',
-        x: 100,
-        y: 100,
+        x: 10,
+        y: 200,
         props: {
-          w: 600,
-          h: 200,
+          w: 400,
+          h: 150,
           geo: 'rectangle',
           color: 'black',
           fill: 'none',
@@ -31,8 +31,8 @@ export default function TldrawCanvas({ editor, setEditor, description, setDescri
       {
         id: 'shape:2',
         type: 'text',
-        x: 100,
-        y: 50,
+        x: 10,
+        y: 150,
         props: {
           text: 'Description',
           size: 'l',
