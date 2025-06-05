@@ -1,6 +1,9 @@
 # Welcome
 I’ve built a web application designed specifically for Product Managers who want to streamline the process of creating effective use cases. My app takes a high-level description and transforms it into a detailed specification, a flowchart, and even an executable flow that you can validate by simulating different test scenarios. This tool is all about making it easier to gather feedback from business users and refine your product’s requirements with confidence. To support this functionality, I used Tldraw as the canvas, providing a flexible and interactive space for users to visualize and work with their use cases.
 
+# Demo
+https://drive.google.com/file/d/1vHlgmCA0g7pTzsWpSPBkkDVtMHJ_NYDg/view 
+
 # Getting Started With the App
 **1. Clone the Repository:** Begin by cloning this repository into your VSCode environment.
 
