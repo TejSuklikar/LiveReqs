@@ -1,50 +1,34 @@
-import React, { useState } from 'react';
-import '@tldraw/tldraw/tldraw.css';  // Tldraw base styling
-import TldrawCanvas from './TLDrawCanvas';
-import ButtonsPanel from './ButtonsPanel';
+import React from 'react';
+import { Tldraw } from 'tldraw';
+import './index.css';
+import { createInitialShapes } from './initialShapes';
+import { createMeasureElement, updateRectangleSize, removeMeasureElement } from './textMeasurement';
+import { setupEventHandlers } from './eventHandlers';
 
 export default function App() {
-  // Top-level state
-  const [editor, setEditor] = useState(null);       // Reference to Tldraw editor
-  const [description, setDescription] = useState(''); 
-  const [notification, setNotification] = useState(null);
+  const onMount = (app) => {
+    // Create the hidden element for measuring text
+    const measureElement = createMeasureElement();
+
+    // Create the initial shapes on the canvas
+    createInitialShapes(app);
+
+    // Set up all event handlers
+    const cleanupEventHandlers = setupEventHandlers(app, measureElement);
+
+    // Trigger the initial size update
+    updateRectangleSize(app, measureElement);
+
+    // Return cleanup function
+    return () => {
+      cleanupEventHandlers();
+      removeMeasureElement(measureElement);
+    };
+  };
 
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
-      {/* The Tldraw canvas */}
-      <TldrawCanvas
-        editor={editor}
-        setEditor={setEditor}
-        description={description}
-        setDescription={setDescription}
-      />
-
-      {/* Notification banner if needed */}
-      {notification && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: 'yellow',
-            padding: '10px',
-            borderRadius: '5px',
-            zIndex: 1001,
-          }}
-        >
-          {notification}
-        </div>
-      )}
-
-      {/* Panel of buttons and their logic */}
-      <ButtonsPanel
-        editor={editor}
-        description={description}
-        setDescription={setDescription}
-        notification={notification}
-        setNotification={setNotification}
-      />
+      <Tldraw onMount={onMount} />
     </div>
   );
 }
