@@ -228,7 +228,7 @@ Make sure that the test cases only test the code and the stuff in the code, dont
   try {
     // Call the Anthropic API to generate the test cases
     const msg = await callAnthropicWithRetry(anthropic, {
-      model: 'claude-3-5-sonnet-20240620', // Specify the model to use
+      model: 'claude-opus-4-20250514', // Specify the model to use
       max_tokens: 4000, // Limit the number of tokens in the response
       temperature: 0, // Set temperature for deterministic output
       system: prompt, // Use the prompt defined above as the system message

@@ -50,7 +50,7 @@ router.post('/', async (req, res) => {
   try {
     // Call the Anthropic API with retry logic to generate the use case
     const msg = await callAnthropicWithRetry(anthropic, {
-      model: 'claude-3-5-sonnet-20240620', // Specify the model to use
+      model: 'claude-opus-4-20250514', // Specify the model to use
       max_tokens: 1000, // Limit the number of tokens in the response
       temperature: 0, // Set temperature for deterministic output
       system: prompt, // Use the prompt defined above as the system message
