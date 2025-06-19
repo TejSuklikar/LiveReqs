@@ -3,6 +3,8 @@
 <!-- HEADER STYLE: CLASSIC -->
 <div align="center">
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 # LiveReqs
 
 <em>Transform ideas into actionable, visual use cases</em>
@@ -137,5 +139,13 @@ npm test
 ---
 
 <div align="left"><a href="#top">⬆ Return</a></div>
+
+## License
+
+LiveReqs is licensed under the [GNU General Public License v3.0](./LICENSE).
+
+You may use, modify, and distribute this software freely, provided that all copies and derivative works are also licensed under GPL-3.0 and include the original source code.  
+This ensures that LiveReqs remains free and open for all users.
+
 
 ---
