@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import * as apiService from './apiService';
+import * as shapeHelpers from './shapeHelpers';
 
 export default function ButtonsPanel({
   editor,
@@ -16,118 +17,30 @@ export default function ButtonsPanel({
   const [isTestCasesLoading, setIsTestCasesLoading] = useState(false);
   const [isResultsLoading, setIsResultsLoading] = useState(false);
 
-  // Helper: Check if a shape with a given ID exists
-  const shapeExists = (shapeId) => editor && editor.getShape(shapeId) !== undefined;
-
-  // Helper: Zoom to all shapes in the current scene
-  // by selecting them, zooming to that selection, then clearing selection.
-  const zoomOut = () => {
-    if (!editor) return;
-
-    // Get the current camera state
-    const { x, y, z } = editor.getCamera();
-
-    // Calculate new zoom level (reduce by 10%)
-    const newZoom = z * 0.85;
-
-    // Update the camera with the new zoom level
-    editor.setCamera({ x, y, z: newZoom });
-};
-
-
-
   // ----------------------------
   // 1) Generate Use Case
   // ----------------------------
   const handleGoClick = async () => {
     setIsUseCaseLoading(true);
-    let useCaseDescription = 'Use Case Description Generating...';
+    const loadingText = 'Use Case Description Generating...';
 
     // Create or update the "use case" shape
-    if (!shapeExists('shape:usecasebox')) {
-      editor.createShapes([
-        {
-          id: 'shape:usecasebox',
-          type: 'geo',
-          x: 430,
-          y: 200,
-          props: {
-            w: 450,
-            h: 550,
-            geo: 'rectangle',
-            color: 'black',
-            fill: 'none',
-            dash: 'draw',
-            size: 'm',
-            font: 'draw',
-            text: useCaseDescription,
-            align: 'middle',
-            verticalAlign: 'middle',
-          },
-        },
-        {
-          id: 'shape:usecaselabel',
-          type: 'text',
-          x: 500,
-          y: 150,
-          props: {
-            text: 'Use Case',
-            size: 'l',
-            font: 'draw',
-            color: 'black',
-          },
-        },
-      ]);
-    } else {
-      editor.updateShapes([
-        {
-          id: 'shape:usecasebox',
-          type: 'geo',
-          props: { text: useCaseDescription },
-        },
-      ]);
-    }
+    shapeHelpers.createOrUpdateUseCaseShapes(editor, loadingText);
 
+    let useCaseDescription;
     if (description.trim() === '' || description === 'Type here...') {
-      editor.updateShapes([
-        {
-          id: 'shape:1',
-          type: 'geo',
-          props: { text: 'Type here...' },
-        },
-      ]);
+      shapeHelpers.updateDescriptionShape(editor, 'Type here...');
       useCaseDescription = 'Please enter a description.';
     } else {
-      try {
-        const response = await axios.post('http://localhost:5001/api/usecase', {
-          description,
-          apiKey,
-        });
-        useCaseDescription = response.data.completion || 'Use Case Description';
-      } catch (error) {
-        console.error('Error generating use case description:', error);
-        useCaseDescription = 'Error generating use case. Please try again.';
-      }
+      useCaseDescription = await apiService.generateUseCase(description, apiKey);
     }
 
     // Update the final text
-    if (shapeExists('shape:usecasebox')) {
-      editor.updateShapes([
-        {
-          id: 'shape:usecasebox',
-          type: 'geo',
-          props: {
-            text: useCaseDescription,
-            align: 'start',
-            verticalAlign: 'start',
-          },
-        },
-      ]);
-    }
+    shapeHelpers.updateUseCaseShape(editor, useCaseDescription);
     setIsUseCaseLoading(false);
 
     // Auto-fit all shapes on screen
-    zoomOut();
+    shapeHelpers.zoomOut(editor);
   };
 
   // ----------------------------
@@ -135,91 +48,26 @@ export default function ButtonsPanel({
   // ----------------------------
   const handleGenerateMermaidMarkdownClick = async () => {
     setIsDiagramLoading(true);
-    let diagram = 'Mermaid Markdown Generating...';
+    const loadingText = 'Mermaid Markdown Generating...';
 
-    if (!shapeExists('shape:markdownbox')) {
-      editor.createShapes([
-        {
-          id: 'shape:markdownbox',
-          type: 'geo',
-          x: 900,
-          y: 200,
-          props: {
-            w: 500,
-            h: 600,
-            geo: 'rectangle',
-            color: 'black',
-            fill: 'none',
-            dash: 'draw',
-            size: 'm',
-            font: 'draw',
-            text: diagram,
-            align: 'middle',
-            verticalAlign: 'middle',
-          },
-        },
-        {
-          id: 'shape:markdownlabel',
-          type: 'text',
-          x: 1000,
-          y: 150,
-          props: {
-            text: 'Markdown',
-            size: 'l',
-            font: 'draw',
-            color: 'black',
-          },
-        },
-      ]);
-    } else {
-      editor.updateShapes([
-        {
-          id: 'shape:markdownbox',
-          type: 'geo',
-          props: { text: diagram },
-        },
-      ]);
-    }
+    shapeHelpers.createOrUpdateMarkdownShapes(editor, loadingText);
 
+    let diagram;
     if (description.trim() === '' || description === 'Type here...') {
-      editor.updateShapes([
-        {
-          id: 'shape:1',
-          type: 'geo',
-          props: { text: 'Type here...' },
-        },
-      ]);
+      shapeHelpers.updateDescriptionShape(editor, 'Type here...');
       diagram = 'Please enter a description.';
     } else {
-      try {
-        const useCaseDescription = shapeExists('shape:usecasebox')
-          ? editor.getShape('shape:usecasebox').props.text
-          : 'Use case not available';
+      const useCaseDescription = shapeHelpers.shapeExists(editor, 'shape:usecasebox')
+        ? editor.getShape('shape:usecasebox').props.text
+        : 'Use case not available';
 
-        const response = await axios.post('http://localhost:5001/api/diagram', {
-          description,
-          useCaseDescription,
-          apiKey,
-        });
-        diagram = response.data.completion || 'Mermaid Markdown';
-      } catch (error) {
-        console.error('Error generating Mermaid Markdown:', error);
-        diagram = 'Error generating diagram. Please try again.';
-      }
+      diagram = await apiService.generateMermaidMarkdown(description, useCaseDescription, apiKey);
     }
 
-    if (shapeExists('shape:markdownbox')) {
-      editor.updateShapes([
-        {
-          id: 'shape:markdownbox',
-          type: 'geo',
-          props: { text: diagram, align: 'start', verticalAlign: 'start' },
-        },
-      ]);
-    }
+    shapeHelpers.updateMarkdownShape(editor, diagram);
     setIsDiagramLoading(false);
 
-    zoomOut();
+    shapeHelpers.zoomOut(editor);
   };
 
   // ----------------------------
@@ -227,91 +75,26 @@ export default function ButtonsPanel({
   // ----------------------------
   const handleGenerateCodeClick = async () => {
     setIsCodeLoading(true);
-    let code = 'Code is Generating...';
+    const loadingText = 'Code is Generating...';
 
-    if (!shapeExists('shape:codebox')) {
-      editor.createShapes([
-        {
-          id: 'shape:codebox',
-          type: 'geo',
-          x: 1420,
-          y: 200,
-          props: {
-            w: 580,
-            h: 600,
-            geo: 'rectangle',
-            color: 'black',
-            fill: 'none',
-            dash: 'draw',
-            size: 'm',
-            font: 'draw',
-            text: code,
-            align: 'middle',
-            verticalAlign: 'middle',
-          },
-        },
-        {
-          id: 'shape:codelabel',
-          type: 'text',
-          x: 1600,
-          y: 150,
-          props: {
-            text: 'Code',
-            size: 'l',
-            font: 'draw',
-            color: 'black',
-          },
-        },
-      ]);
-    } else {
-      editor.updateShapes([
-        {
-          id: 'shape:codebox',
-          type: 'geo',
-          props: { text: code },
-        },
-      ]);
-    }
+    shapeHelpers.createOrUpdateCodeShapes(editor, loadingText);
 
+    let code;
     if (description.trim() === '' || description === 'Type here...') {
-      editor.updateShapes([
-        {
-          id: 'shape:1',
-          type: 'geo',
-          props: { text: 'Type here...' },
-        },
-      ]);
+      shapeHelpers.updateDescriptionShape(editor, 'Type here...');
       code = 'Please enter a description.';
     } else {
-      try {
-        const useCaseDescription = shapeExists('shape:usecasebox')
-          ? editor.getShape('shape:usecasebox').props.text
-          : 'Use case not available';
+      const useCaseDescription = shapeHelpers.shapeExists(editor, 'shape:usecasebox')
+        ? editor.getShape('shape:usecasebox').props.text
+        : 'Use case not available';
 
-        const response = await axios.post('http://localhost:5001/api/code', {
-          description,
-          useCaseDescription,
-          apiKey,
-        });
-        code = response.data.completion || 'JavaScript Code';
-      } catch (error) {
-        console.error('Error generating JavaScript code:', error);
-        code = 'Error generating code. Please try again.';
-      }
+      code = await apiService.generateCode(description, useCaseDescription, apiKey);
     }
 
-    if (shapeExists('shape:codebox')) {
-      editor.updateShapes([
-        {
-          id: 'shape:codebox',
-          type: 'geo',
-          props: { text: code, align: 'start', verticalAlign: 'start' },
-        },
-      ]);
-    }
+    shapeHelpers.updateCodeShape(editor, code);
     setIsCodeLoading(false);
 
-    zoomOut();
+    shapeHelpers.zoomOut(editor);
   };
 
   // ----------------------------
@@ -319,87 +102,26 @@ export default function ButtonsPanel({
   // ----------------------------
   const handleTestCasesClick = async () => {
     setIsTestCasesLoading(true);
-    let testCases = 'Test Cases Are Generating...';
+    const loadingText = 'Test Cases Are Generating...';
 
-    if (!shapeExists('shape:testcasebox')) {
-      editor.createShapes([
-        {
-          id: 'shape:testcasebox',
-          type: 'geo',
-          x: 2020,
-          y: 200,
-          props: {
-            w: 650,
-            h: 600,
-            geo: 'rectangle',
-            color: 'black',
-            fill: 'none',
-            dash: 'draw',
-            size: 'm',
-            font: 'draw',
-            text: testCases,
-            align: 'middle',
-            verticalAlign: 'middle',
-          },
-        },
-        {
-          id: 'shape:testcaselabel',
-          type: 'text',
-          x: 2200,
-          y: 150,
-          props: {
-            text: 'Test Cases',
-            size: 'l',
-            font: 'draw',
-            color: 'black',
-          },
-        },
-      ]);
-    } else {
-      editor.updateShapes([
-        {
-          id: 'shape:testcasebox',
-          type: 'geo',
-          props: { text: testCases },
-        },
-      ]);
-    }
+    shapeHelpers.createOrUpdateTestCasesShapes(editor, loadingText);
 
+    let testCases;
     if (description.trim() === '' || description === 'Type here...') {
-      editor.updateShapes([
-        { id: 'shape:1', type: 'geo', props: { text: 'Type here...' } },
-      ]);
+      shapeHelpers.updateDescriptionShape(editor, 'Type here...');
       testCases = 'Please enter a description.';
     } else {
-      try {
-        const code = shapeExists('shape:codebox')
-          ? editor.getShape('shape:codebox').props.text
-          : 'Code not available';
+      const code = shapeHelpers.shapeExists(editor, 'shape:codebox')
+        ? editor.getShape('shape:codebox').props.text
+        : 'Code not available';
 
-        const response = await axios.post('http://localhost:5001/api/testcases', {
-          description,
-          code,
-          apiKey,
-        });
-        testCases = response.data.completion || 'Test Cases';
-      } catch (error) {
-        console.error('Error generating test cases:', error);
-        testCases = 'Error generating test cases. Please try again.';
-      }
+      testCases = await apiService.generateTestCases(description, code, apiKey);
     }
 
-    if (shapeExists('shape:testcasebox')) {
-      editor.updateShapes([
-        {
-          id: 'shape:testcasebox',
-          type: 'geo',
-          props: { text: testCases, align: 'start', verticalAlign: 'start' },
-        },
-      ]);
-    }
+    shapeHelpers.updateTestCasesShape(editor, testCases);
     setIsTestCasesLoading(false);
 
-    zoomOut();
+    shapeHelpers.zoomOut(editor);
   };
 
   // ----------------------------
@@ -407,59 +129,20 @@ export default function ButtonsPanel({
   // ----------------------------
   const handleRunTestsClick = async () => {
     setIsResultsLoading(true);
-    let results = 'Running Tests...';
+    const loadingText = 'Running Tests...';
 
-    if (!shapeExists('shape:resultsbox')) {
-      editor.createShapes([
-        {
-          id: 'shape:resultsbox',
-          type: 'geo',
-          x: 2690,
-          y: 200,
-          props: {
-            w: 650,
-            h: 600,
-            geo: 'rectangle',
-            color: 'black',
-            fill: 'none',
-            dash: 'draw',
-            size: 'm',
-            font: 'draw',
-            text: results,
-            align: 'middle',
-            verticalAlign: 'middle',
-          },
-        },
-        {
-          id: 'shape:resultslabel',
-          type: 'text',
-          x: 2900,
-          y: 150,
-          props: {
-            text: 'Test Results',
-            size: 'l',
-            font: 'draw',
-            color: 'black',
-          },
-        },
-      ]);
-    } else {
-      editor.updateShapes([
-        { id: 'shape:resultsbox', type: 'geo', props: { text: results } },
-      ]);
-    }
+    shapeHelpers.createOrUpdateResultsShapes(editor, loadingText);
 
+    let results;
     if (description.trim() === '' || description === 'Type here...') {
-      editor.updateShapes([
-        { id: 'shape:1', type: 'geo', props: { text: 'Type here...' } },
-      ]);
+      shapeHelpers.updateDescriptionShape(editor, 'Type here...');
       results = 'Please enter a description and generate code and test cases first.';
     } else {
       try {
-        const code = shapeExists('shape:codebox')
+        const code = shapeHelpers.shapeExists(editor, 'shape:codebox')
           ? editor.getShape('shape:codebox').props.text
           : '';
-        const testCasesText = shapeExists('shape:testcasebox')
+        const testCasesText = shapeHelpers.shapeExists(editor, 'shape:testcasebox')
           ? editor.getShape('shape:testcasebox').props.text
           : '';
 
@@ -477,33 +160,17 @@ export default function ButtonsPanel({
         // Parse the test cases
         const testCases = parseTestCases(testCasesText, simulationFunctionName);
 
-        console.log('Sending code:', code);
-        console.log('Sending test cases:', testCases);
-
-        const response = await axios.post('http://localhost:5001/api/runtests', {
-          code,
-          testCases,
-        });
-        results = response.data.results ? response.data.results.join('\n\n') : 'Test Results';
-        console.log('Test Results:', results);
+        results = await apiService.runTests(code, testCases);
       } catch (error) {
         console.error('Error running test cases:', error);
         results = `Error running test cases: ${error.message}`;
       }
     }
 
-    if (shapeExists('shape:resultsbox')) {
-      editor.updateShapes([
-        {
-          id: 'shape:resultsbox',
-          type: 'geo',
-          props: { text: results, align: 'start', verticalAlign: 'start' },
-        },
-      ]);
-    }
+    shapeHelpers.updateResultsShape(editor, results);
     setIsResultsLoading(false);
 
-    zoomOut();
+    shapeHelpers.zoomOut(editor);
   };
 
   function parseTestCases(testCasesText, simulationFunctionName) {
