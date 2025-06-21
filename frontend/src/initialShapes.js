@@ -4,11 +4,11 @@ export const createInitialShapes = (app) => {
     {
       id: 'shape:1',
       type: 'geo',
-      x: 300,
+      x: 50,          // ← MOVED LEFT (was 300)
       y: 200,
       props: {
-        w: 5000,
-        h: 2000,
+        w: 1000,       // ← MADE REASONABLE SIZE (was 5000!)
+        h: 400,       // ← MADE REASONABLE SIZE (was 2000!)
         geo: 'rectangle',
         color: 'black',
         fill: 'solid',
@@ -23,7 +23,7 @@ export const createInitialShapes = (app) => {
     {
       id: 'shape:2',
       type: 'text',
-      x: 300,
+      x: 50,          // ← MOVED LEFT TO ALIGN (was 300)
       y: 150,
       props: {
         text: 'Description',
@@ -35,18 +35,18 @@ export const createInitialShapes = (app) => {
     {
       id: 'shape:3',
       type: 'geo',
-      x: 460,
-      y: 150,
+      x: 50,          // ← MOVED LEFT (was 460)
+      y: 1700,         // ← MOVED BELOW DESCRIPTION BOX (was 150)
       props: {
-        w: 50,
-        h: 30,
+        w: 150,       // ← MADE WIDER (was 50)
+        h: 50,        // ← MADE TALLER (was 30)
         geo: 'rectangle',
         color: 'blue',
         fill: 'solid',
         dash: 'draw',
         size: 'm',
         font: 'draw',
-        text: 'Go',
+        text: 'Run All', // ← CHANGED TEXT (was 'Go')
         align: 'middle',
         verticalAlign: 'middle',
       },

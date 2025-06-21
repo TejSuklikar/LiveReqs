@@ -18,10 +18,14 @@ export const updateRectangleSize = (app, measureElement) => {
   if (textShape) {
     measureElement.innerText = textShape.props.text;
     const rect = measureElement.getBoundingClientRect();
-    const padding = 20;
+    const padding = 40; // Increase padding for more space
 
-    const newWidth = rect.width + padding;
-    const newHeight = rect.height + padding;
+    // Set minimum dimensions
+    const minWidth = 500;   // ← Minimum width
+    const minHeight = 300;  // ← Minimum height
+
+    const newWidth = Math.max(rect.width + padding, minWidth);
+    const newHeight = Math.max(rect.height + padding, minHeight);
 
     app.updateShapes([
       {

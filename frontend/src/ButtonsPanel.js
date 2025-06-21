@@ -8,6 +8,7 @@ export default function ButtonsPanel({
   setDescription,
   notification,
   setNotification,
+  setRunAllFunction, // Add this prop to connect canvas button
 }) {
   // Local states
   const [apiKey, setApiKey] = useState('');
@@ -108,11 +109,11 @@ export default function ButtonsPanel({
   // Get validation message
   const getValidationMessage = () => {
     if (!apiKey) return '';
-    if (isTestingApiKey) return '🔄 Testing API key...';
-    if (apiKeyTestResult === 'valid') return '✅ API key is valid and working';
-    if (apiKeyTestResult === 'invalid') return '❌ API key is invalid or unauthorized';
-    if (isApiKeyValid) return '⏳ Valid format - testing connection...';
-    return '❌ Invalid API key format';
+    if (isTestingApiKey) return 'Testing API key...';
+    if (apiKeyTestResult === 'valid') return 'API key is valid and working';
+    if (apiKeyTestResult === 'invalid') return 'API key is invalid or unauthorized';
+    if (isApiKeyValid) return 'Valid format - testing connection...';
+    return 'Invalid API key format';
   };
 
   // Get validation message color
@@ -313,6 +314,104 @@ export default function ButtonsPanel({
 
     shapeHelpers.zoomOut(editor);
   };
+
+  // ----------------------------
+  // 6) Run All Sequentially
+  // ----------------------------
+  const handleRunAllClick = useCallback(async () => {
+    if (!buttonsEnabled) return;
+    
+    if (description.trim() === '' || description === 'Type here...') {
+      shapeHelpers.updateDescriptionShape(editor, 'Type here...');
+      alert('Please enter a description first!');
+      return;
+    }
+
+    try {
+      console.log('Starting sequential execution...');
+      
+      // Step 1: Generate Use Case
+      console.log('Step 1: Generating Use Case...');
+      setIsUseCaseLoading(true);
+      const loadingText1 = 'Use Case Description Generating...';
+      shapeHelpers.createOrUpdateUseCaseShapes(editor, loadingText1);
+      const useCaseDescription = await apiService.generateUseCase(description, apiKey);
+      shapeHelpers.updateUseCaseShape(editor, useCaseDescription);
+      setIsUseCaseLoading(false);
+      shapeHelpers.zoomOut(editor);
+      
+      // Step 2: Generate Diagram
+      console.log('Step 2: Generating Diagram...');
+      setIsDiagramLoading(true);
+      const loadingText2 = 'Mermaid Markdown Generating...';
+      shapeHelpers.createOrUpdateMarkdownShapes(editor, loadingText2);
+      const diagram = await apiService.generateMermaidMarkdown(description, useCaseDescription, apiKey);
+      shapeHelpers.updateMarkdownShape(editor, diagram);
+      setIsDiagramLoading(false);
+      shapeHelpers.zoomOut(editor);
+      
+      // Step 3: Generate Code
+      console.log('Step 3: Generating Code...');
+      setIsCodeLoading(true);
+      const loadingText3 = 'Code is Generating...';
+      shapeHelpers.createOrUpdateCodeShapes(editor, loadingText3);
+      const code = await apiService.generateCode(description, useCaseDescription, apiKey);
+      shapeHelpers.updateCodeShape(editor, code);
+      setIsCodeLoading(false);
+      shapeHelpers.zoomOut(editor);
+      
+      // Step 4: Generate Test Cases
+      console.log('Step 4: Generating Test Cases...');
+      setIsTestCasesLoading(true);
+      const loadingText4 = 'Test Cases Are Generating...';
+      shapeHelpers.createOrUpdateTestCasesShapes(editor, loadingText4);
+      const testCases = await apiService.generateTestCases(useCaseDescription, code, apiKey);
+      shapeHelpers.updateTestCasesShape(editor, testCases);
+      setIsTestCasesLoading(false);
+      shapeHelpers.zoomOut(editor);
+      
+      // Step 5: Run Tests
+      console.log('Step 5: Running Tests...');
+      setIsResultsLoading(true);
+      const loadingText5 = 'Running Tests...';
+      shapeHelpers.createOrUpdateResultsShapes(editor, loadingText5);
+      
+      // Extract function name and parse test cases
+      const functionMatch = code.match(/function\s+(\w+)\s*\([^)]*\)\s*{/);
+      if (!functionMatch) {
+        throw new Error('No simulation function found in the provided code');
+      }
+      const simulationFunctionName = functionMatch[1];
+      const parsedTestCases = parseTestCases(testCases, simulationFunctionName);
+      
+      const results = await apiService.runTests(code, parsedTestCases);
+      shapeHelpers.updateResultsShape(editor, results);
+      setIsResultsLoading(false);
+      shapeHelpers.zoomOut(editor);
+      
+      console.log('All steps completed successfully!');
+      
+    } catch (error) {
+      console.error('Error in sequential execution:', error);
+      
+      // Reset all loading states in case of error
+      setIsUseCaseLoading(false);
+      setIsDiagramLoading(false);
+      setIsCodeLoading(false);
+      setIsTestCasesLoading(false);
+      setIsResultsLoading(false);
+      
+      // Show error message in the results box
+      shapeHelpers.createOrUpdateResultsShapes(editor, `Error in sequential execution: ${error.message}`);
+    }
+  }, [buttonsEnabled, description, editor, apiKey]);
+
+  // Connect the handleRunAllClick function to the canvas button
+  useEffect(() => {
+    if (setRunAllFunction) {
+      setRunAllFunction(() => handleRunAllClick);
+    }
+  }, [handleRunAllClick, setRunAllFunction]);
 
   function parseTestCases(testCasesText, simulationFunctionName) {
     const testCases = [];
