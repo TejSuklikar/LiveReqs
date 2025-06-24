@@ -13,117 +13,49 @@ export default function ButtonsPanel({
   // Local states
   const [apiKey, setApiKey] = useState('');
   const [isApiKeyValid, setIsApiKeyValid] = useState(false);
-  const [isTestingApiKey, setIsTestingApiKey] = useState(false);
-  const [apiKeyTestResult, setApiKeyTestResult] = useState(null); // null, 'valid', 'invalid'
   const [isUseCaseLoading, setIsUseCaseLoading] = useState(false);
   const [isDiagramLoading, setIsDiagramLoading] = useState(false);
   const [isCodeLoading, setIsCodeLoading] = useState(false);
   const [isTestCasesLoading, setIsTestCasesLoading] = useState(false);
   const [isResultsLoading, setIsResultsLoading] = useState(false);
 
-  // Function to test if an API key is valid by making a minimal API call
-  const testApiKey = async (apiKey) => {
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01', // Current required version
-        },
-        body: JSON.stringify({
-          model: 'claude-3-haiku-20240307', // Cheapest/fastest model for testing
-          max_tokens: 5, // Minimal tokens to save costs
-          messages: [{ 
-            role: 'user', 
-            content: 'Hi' // Minimal message
-          }]
-        })
-      });
-      
-      // Return true if successful (status 200-299)
-      return response.ok;
-    } catch (error) {
-      console.error('API key test failed:', error);
-      return false;
-    }
-  };
-
   // API Key format validation function
   const validateApiKeyFormat = (key) => {
     // Basic Claude API key format validation
     const trimmedKey = key.trim();
     
-    // Claude API keys typically start with 'sk-ant-api' and are quite long
-    const isValidFormat = trimmedKey.startsWith('sk-ant-api') && trimmedKey.length > 50;
+    // Claude API keys start with 'sk-ant-' and are quite long (usually 100+ characters)
+    const isValidFormat = trimmedKey.startsWith('sk-ant-') && trimmedKey.length > 50;
     
     return isValidFormat;
   };
 
-  // Debounced API key testing function
-  const debouncedTestApiKey = useCallback((key) => {
-    const timeoutId = setTimeout(async () => {
-      if (validateApiKeyFormat(key)) {
-        setIsTestingApiKey(true);
-        setApiKeyTestResult(null);
-        
-        const isValid = await testApiKey(key);
-        setApiKeyTestResult(isValid ? 'valid' : 'invalid');
-        setIsTestingApiKey(false);
-      } else {
-        setApiKeyTestResult(null);
-      }
-    }, 1000); // Test 1 second after user stops typing
-
-    // Return cleanup function
-    return () => clearTimeout(timeoutId);
-  }, []);
-
-  // Validate API key format whenever it changes
+  // SIMPLIFIED: Just validate format, don't test the API in real-time
+  // (We'll test it when the user actually clicks a button)
   useEffect(() => {
     const formatValid = validateApiKeyFormat(apiKey);
     setIsApiKeyValid(formatValid);
-    
-    let cleanup;
-    if (formatValid) {
-      cleanup = debouncedTestApiKey(apiKey);
-    } else {
-      setApiKeyTestResult(null);
-      setIsTestingApiKey(false);
-    }
-
-    // Cleanup timeout on unmount or dependency change
-    return cleanup;
-  }, [apiKey, debouncedTestApiKey]);
+  }, [apiKey]);
 
   // Get input border color based on validation state
   const getInputBorderColor = () => {
     if (!apiKey) return '#e1e5e9'; // Default gray
-    if (isTestingApiKey) return '#ffc107'; // Yellow for testing
-    if (apiKeyTestResult === 'valid') return '#28a745'; // Green for valid
-    if (apiKeyTestResult === 'invalid') return '#dc3545'; // Red for invalid
-    if (isApiKeyValid) return '#17a2b8'; // Blue for valid format (testing pending)
+    if (isApiKeyValid) return '#28a745'; // Green for valid format
     return '#dc3545'; // Red for invalid format
   };
 
   // Get validation message
   const getValidationMessage = () => {
     if (!apiKey) return '';
-    if (isTestingApiKey) return 'Testing API key...';
-    if (apiKeyTestResult === 'valid') return 'API key is valid and working';
-    if (apiKeyTestResult === 'invalid') return 'API key is invalid or unauthorized';
-    if (isApiKeyValid) return 'Valid format - testing connection...';
-    return 'Invalid API key format';
+    if (isApiKeyValid) return 'API key format is valid';
+    return 'Invalid API key format (should start with sk-ant-)';
   };
 
   // Get validation message color
   const getValidationMessageColor = () => {
     if (!apiKey) return '#6c757d';
-    if (isTestingApiKey) return '#ffc107';
-    if (apiKeyTestResult === 'valid') return '#28a745';
-    if (apiKeyTestResult === 'invalid') return '#dc3545';
-    if (isApiKeyValid) return '#17a2b8';
-    return '#dc3545';
+    if (isApiKeyValid) return '#28a745'; // Green for valid format
+    return '#dc3545'; // Red for invalid format
   };
 
   // Button base styles
@@ -146,8 +78,8 @@ export default function ButtonsPanel({
     opacity: 0.6,
   };
 
-  // Determine if buttons should be enabled
-  const buttonsEnabled = apiKey && isApiKeyValid && apiKeyTestResult === 'valid';
+  // Determine if buttons should be enabled - just check if API key format is valid
+  const buttonsEnabled = apiKey && isApiKeyValid;
 
   // ----------------------------
   // 1) Generate Use Case

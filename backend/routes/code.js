@@ -164,7 +164,7 @@ ${markdownToUse}`;
   try {
     // Call the Anthropic API to convert the Mermaid markdown to JavaScript code
     const msg = await callAnthropicWithRetry(anthropic, {
-      model: 'claude-opus-4-20250514', // Specify the model to use
+      model: 'claude-sonnet-4-20250514', // Specify the model to use
       max_tokens: 4096, // Set a higher token limit for generating the full code
       temperature: 0, // Set temperature for deterministic output
       system: prompt, // Use the prompt defined above as the system message
