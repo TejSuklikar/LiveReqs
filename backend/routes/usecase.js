@@ -10,54 +10,87 @@ router.post('/', async (req, res) => {
   const anthropic = new Anthropic({ apiKey }); // Initialize the Anthropic API client with the provided API key
 
   // Define the prompt to be sent to the Anthropic API, specifying the format for the use case
-  const prompt = `Convert the text description to a detailed use case using the format provided. 
-  Pre-conditions: What has happened before the System is ready to achieve the desired goal
-  Success Criteria: How will we know that the system has succeeded in achieving the goal
-  Triggers: What external event triggers this Use case
-  Actors: The people/roles and (external) systems involved in achieving the goal. The System being built is always one of the Actors.
-  Description: What is the goal of the system? A brief description of how that goal is achieved.
+  const prompt = `You are a product management expert specializing in use case documentation.
 
-  Basic Flow
-  Actor performs action  
-  System/Actor responds with some action
-  Actor performs action 
-  System/Actor responds with some action
-  .
-  .
-  .
-  .
-  Use Case ends in Success
+Convert the following description into a comprehensive, well-structured use case following this exact format:
 
-  Alternate Flows
-  <Basic Flow Step Number N>A. Condition that triggers this flow:
-  Actor performs action
-  System/Actor responds with some action
-  Actor performs action
-  Use Case continues from Step M OR Use Case ends in Success/Failure
-  <Basic Flow Step Number>B. Condition that triggers this flow:
-  Actor performs action
-  System/Actor responds with some action
-  Actor performs action
-  Use Case continues from Step M OR Use Case ends in Success/Failure
+**Use Case: [Descriptive Title]**
 
-  Make sure it follows exactly this format. You can make reasonable assumptions where it seems fit to do but make sure to ask the user if everything looks good before proceeding as the user may need to tweak assumptions. And make sure all possible alternate flows are created. Every single kind of alternate flow should be there. Also make sure for alternate flows that it branches off from correct steps as it can be costly if incorrect. And make sure that every flow is logical and makes sense. Don't just go based off efficiency necessarily, make sure it has logical and realistic flow. Only 
-  provide the use case stuff. The beginning where you describe what the format is or whatever and the end where you ask if everything looks good should not be included. So nothing
-  like this: Based on the provided description, I've created a detailed use case. Please review it and let me know if any adjustments are needed. And nothing like this: Does this use case accurately represent the scenario you described? Are there any assumptions or details you'd like to modify or add? Also these must be actual scenarios and must be able to turn into a use case. Must be logical and make sense. Code and diagrams are valid. If it doesn't make sense or is not logical, it will be rejected. Say "Not a valid text description". If it is code that is valid and you should do the same
-  thing and just explain the code in english in the same template. Make as many alternate flows as possible. Be very thorough. 
-  
-  ${description}`; // Append the user's description to the prompt
+**Pre-conditions:**
+[What must be true before this use case can execute]
+
+**Success Criteria:**
+[How we know the system succeeded]
+
+**Triggers:**
+[What external event initiates this use case]
+
+**Actors:**
+[List all people, roles, and systems involved. The system being built is always an actor.]
+
+**Description:**
+[Brief overview of the goal and how it's achieved]
+
+**Basic Flow:**
+1. [Actor] performs [action]
+2. [System/Actor] responds with [action]
+3. [Continue numbered steps...]
+...
+N. Use Case ends in Success
+
+**Alternate Flows:**
+
+IMPORTANT: Alternate flows must be numbered sequentially starting from step 2.
+- If step 2 has alternate flows, label them 2A, 2B, 2C, etc.
+- If step 3 has alternate flows, label them 3A, 3B, 3C, etc.
+- Continue this pattern for all steps that have alternate flows
+- Do NOT skip numbers (e.g., don't go from 2A to 4A)
+
+Format:
+[Step Number][Letter]. [Condition that triggers this alternate flow]:
+   1. [Actor] performs [action]
+   2. [System/Actor] responds [action]
+   3. Use Case continues from Step [M] OR Use Case ends in [Success/Failure]
+
+Example:
+2A. User authentication fails:
+   1. System displays error message
+   2. System prompts user to retry
+   3. Use Case continues from Step 2
+
+2B. User account is locked:
+   1. System displays locked account message
+   2. System sends unlock email to user
+   3. Use Case ends in Failure
+
+3A. Payment processing fails:
+   1. System logs payment error
+   2. System offers alternative payment methods
+   3. Use Case continues from Step 3
+
+**Critical Requirements:**
+- Create alternate flows for every realistic exception, error, or branching scenario
+- Number alternate flows sequentially by step (2A, 2B, 3A, 3B, 4A, etc.)
+- Ensure alternate flows reference the correct step numbers from the Basic Flow
+- Make the flow logical and realistic (not just efficient)
+- Each step should be atomic and clearly describe a single action or decision
+- Use consistent, clear language that can be easily visualized in a flowchart
+- If the description is code, explain the code's behavior in use case format
+- If the description is invalid or nonsensical, respond with exactly: "Not a valid text description"
+
+**Description to convert:**
+${description}`;
 
   try {
     // Call the Anthropic API with retry logic to generate the use case
     const msg = await callAnthropicWithRetry(anthropic, {
       model: 'claude-opus-4-20250514', // Specify the model to use
-      max_tokens: 1000, // Limit the number of tokens in the response
+      max_tokens: 2500, // Limit the number of tokens in the response
       temperature: 0, // Set temperature for deterministic output
-      system: prompt, // Use the prompt defined above as the system message
       messages: [
         {
           role: 'user',
-          content: description, // Provide the user's description as the content for the user message
+          content: prompt, // Provide the prompt as the content for the user message
         },
       ],
     });
