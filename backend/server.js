@@ -5,9 +5,6 @@ const cors = require('cors');
 // Import route modules
 const usecaseRoutes = require('./routes/usecase');
 const diagramRoutes = require('./routes/diagram');
-const codeRoutes = require('./routes/code');
-const testcasesRoutes = require('./routes/testcases');
-const runtestsRoutes = require('./routes/runtests');
 
 const app = express(); // Initialize the Express application
 const PORT = 5001; // Define the port on which the backend server will run
@@ -19,9 +16,6 @@ app.use(bodyParser.json()); // Use body-parser middleware to parse JSON request 
 // Routes
 app.use('/api/usecase', usecaseRoutes);
 app.use('/api/diagram', diagramRoutes);
-app.use('/api/code', codeRoutes);
-app.use('/api/testcases', testcasesRoutes);
-app.use('/api/runtests', runtestsRoutes);
 
 // Start the Express server and listen on the specified port
 app.listen(PORT, () => {
