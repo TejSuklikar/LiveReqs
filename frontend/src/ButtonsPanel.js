@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import * as apiService from './apiService';
 import * as shapeHelpers from './shapeHelpers';
+import { parseMermaid } from './mermaidParser';
 
 export default function ButtonsPanel({
   editor,
@@ -111,7 +112,7 @@ export default function ButtonsPanel({
   // ----------------------------
   const handleGenerateMermaidMarkdownClick = async () => {
     if (!buttonsEnabled) return;
-    
+
     setIsDiagramLoading(true);
     const loadingText = 'Mermaid Markdown Generating...';
 
@@ -129,9 +130,16 @@ export default function ButtonsPanel({
       diagram = await apiService.generateMermaidMarkdown(description, useCaseDescription, apiKey);
     }
 
+    // Update markdown text box
     shapeHelpers.updateMarkdownShape(editor, diagram);
-    setIsDiagramLoading(false);
 
+    // Parse and render flowchart shapes
+    const { nodes, edges } = parseMermaid(diagram);
+    if (nodes.length > 0) {
+      shapeHelpers.createFlowchartShapes(editor, nodes, edges);
+    }
+
+    setIsDiagramLoading(false);
     shapeHelpers.zoomOut(editor);
   };
 
@@ -167,6 +175,13 @@ export default function ButtonsPanel({
       shapeHelpers.createOrUpdateMarkdownShapes(editor, loadingText2);
       const diagram = await apiService.generateMermaidMarkdown(description, useCaseDescription, apiKey);
       shapeHelpers.updateMarkdownShape(editor, diagram);
+
+      // Parse and render flowchart shapes
+      const { nodes, edges } = parseMermaid(diagram);
+      if (nodes.length > 0) {
+        shapeHelpers.createFlowchartShapes(editor, nodes, edges);
+      }
+
       setIsDiagramLoading(false);
       shapeHelpers.zoomOut(editor);
 
