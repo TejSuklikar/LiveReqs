@@ -42,13 +42,27 @@ export default function TldrawCanvas({ editor, setEditor, description, setDescri
       },
     ]);
 
-    // Listen for updates to the editor—so we can track changes to shape #1's text
-    editorInstance.on('update', () => {
+    // Listen for shape changes to track changes to shape #1's text
+    const updateDescription = () => {
       const descriptionShape = editorInstance.getShape('shape:1');
-      if (descriptionShape) {
+      if (descriptionShape && descriptionShape.props.text !== undefined) {
+        console.log('Description updated:', descriptionShape.props.text);
         setDescription(descriptionShape.props.text);
       }
-    });
+    };
+
+    // Listen to store changes for more reliable updates
+    editorInstance.store.listen(
+      (entry) => {
+        if (entry.changes.updated && entry.changes.updated['shape:1']) {
+          updateDescription();
+        }
+      },
+      { source: 'user', scope: 'document' }
+    );
+
+    // Also update on any change event as backup
+    editorInstance.on('change', updateDescription);
   };
 
   // Allow loading a .tldr file to restore a saved canvas
