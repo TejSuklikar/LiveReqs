@@ -160,8 +160,146 @@ export const updateDescriptionShape = (editor, text) => {
   ]);
 };
 
+// Create or update Flowchart loading box
+export const createOrUpdateFlowchartLoadingBox = (editor, loadingText) => {
+  if (!shapeExists(editor, 'shape:flowchartloadingbox')) {
+    editor.createShapes([
+      {
+        id: 'shape:flowchartloadingbox',
+        type: 'geo',
+        x: 2200,
+        y: 300,
+        props: {
+          w: 400,
+          h: 200,
+          geo: 'rectangle',
+          color: 'violet',
+          fill: 'solid',
+          dash: 'solid',
+          size: 'm',
+          font: 'sans',
+          text: loadingText,
+          align: 'middle',
+          verticalAlign: 'middle',
+        },
+      },
+      {
+        id: 'shape:flowchartloadinglabel',
+        type: 'text',
+        x: 2200,
+        y: 250,
+        props: {
+          text: 'Flowchart',
+          size: 'l',
+          font: 'sans',
+          color: 'black',
+        },
+      },
+    ]);
+  } else {
+    editor.updateShapes([
+      {
+        id: 'shape:flowchartloadingbox',
+        type: 'geo',
+        props: { text: loadingText },
+      },
+    ]);
+  }
+};
+
 /**
- * Creates flowchart shapes from parsed Mermaid data using simple vertical layout
+ * Calculate hierarchical layout for flowchart nodes
+ * @param {Array} nodes - Parsed nodes
+ * @param {Array} edges - Parsed edges
+ * @returns {Map} nodeId -> {x, y, level, column}
+ */
+function calculateHierarchicalLayout(nodes, edges) {
+  const positions = new Map();
+  const inDegree = new Map();
+  const outEdges = new Map();
+  const levels = new Map();
+
+  // Initialize structures
+  nodes.forEach(node => {
+    inDegree.set(node.id, 0);
+    outEdges.set(node.id, []);
+  });
+
+  // Build adjacency info
+  edges.forEach(edge => {
+    inDegree.set(edge.to, (inDegree.get(edge.to) || 0) + 1);
+    const outList = outEdges.get(edge.from) || [];
+    outList.push(edge.to);
+    outEdges.set(edge.from, outList);
+  });
+
+  // Find root nodes (no incoming edges)
+  const roots = nodes.filter(node => inDegree.get(node.id) === 0);
+
+  // If no roots found, use first node
+  if (roots.length === 0 && nodes.length > 0) {
+    roots.push(nodes[0]);
+  }
+
+  // BFS to assign levels
+  const queue = [];
+  roots.forEach(root => {
+    levels.set(root.id, 0);
+    queue.push(root.id);
+  });
+
+  while (queue.length > 0) {
+    const nodeId = queue.shift();
+    const currentLevel = levels.get(nodeId);
+    const children = outEdges.get(nodeId) || [];
+
+    children.forEach(childId => {
+      if (!levels.has(childId) || levels.get(childId) < currentLevel + 1) {
+        levels.set(childId, currentLevel + 1);
+        queue.push(childId);
+      }
+    });
+  }
+
+  // Handle nodes without level (disconnected)
+  nodes.forEach(node => {
+    if (!levels.has(node.id)) {
+      levels.set(node.id, 0);
+    }
+  });
+
+  // Group nodes by level
+  const levelGroups = new Map();
+  nodes.forEach(node => {
+    const level = levels.get(node.id);
+    if (!levelGroups.has(level)) {
+      levelGroups.set(level, []);
+    }
+    levelGroups.get(level).push(node);
+  });
+
+  // Calculate positions
+  const startX = 2200;
+  const startY = 300;
+  const horizontalSpacing = 300;
+  const verticalSpacing = 200;
+
+  levelGroups.forEach((nodesAtLevel, level) => {
+    const levelWidth = nodesAtLevel.length * horizontalSpacing;
+    const levelStartX = startX - (levelWidth / 2);
+
+    nodesAtLevel.forEach((node, index) => {
+      const x = levelStartX + (index * horizontalSpacing);
+      const y = startY + (level * verticalSpacing);
+      positions.set(node.id, { x, y, level });
+    });
+  });
+
+  return positions;
+}
+
+/**
+ * Creates flowchart shapes from parsed Mermaid data using hierarchical layout
  * @param {Editor} editor - TLDraw editor instance
  * @param {Array} nodes - Parsed nodes from mermaidParser
  * @param {Array} edges - Parsed edges from mermaidParser
@@ -176,33 +314,31 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
   console.log('Nodes:', nodes);
   console.log('Edges:', edges);
 
-  // Delete existing flowchart shapes
+  // Delete existing flowchart shapes (but not the loading box)
   const existingFlowchartShapes = editor.getCurrentPageShapes()
-    .filter(shape => shape.id.toString().includes('flowchart'));
+    .filter(shape => {
+      const id = shape.id.toString();
+      return id.includes('flowchart') && !id.includes('flowchartloadingbox') && !id.includes('flowchartloadinglabel');
+    });
   if (existingFlowchartShapes.length > 0) {
-    console.log('Deleting existing shapes:', existingFlowchartShapes.length);
+    console.log('Deleting existing flowchart shapes:', existingFlowchartShapes.length);
     editor.deleteShapes(existingFlowchartShapes.map(s => s.id));
   }
 
+  // Calculate hierarchical layout
+  const nodePositions = calculateHierarchicalLayout(nodes, edges);
+
   const shapes = [];
-  const nodePositions = new Map();
 
-  // SIMPLE VERTICAL LAYOUT
-  const startX = 1500;
-  const startY = 300;
-  const verticalSpacing = 250;  // More spacing between nodes
-
-  // Create shapes vertically
-  nodes.forEach((node, index) => {
-    const y = startY + (index * verticalSpacing);
-    nodePositions.set(node.id, { x: startX, y });
-
+  // Create shapes at calculated positions
+  nodes.forEach((node) => {
+    const pos = nodePositions.get(node.id);
     const shapeConfig = getShapeConfigForNode(node);
 
     shapes.push({
       type: 'geo',
-      x: startX,
-      y: y,
+      x: pos.x,
+      y: pos.y,
       props: {
         geo: shapeConfig.geo,
         w: shapeConfig.w,
@@ -212,7 +348,7 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
         fill: shapeConfig.fill,
         dash: 'solid',
         size: 'm',
-        font: 'sans',  // CRITICAL: Use 'sans' not 'draw'
+        font: 'sans',
         align: 'middle',
         verticalAlign: 'middle',
       },
@@ -227,7 +363,7 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
 
   // Create arrows
   const arrowShapes = [];
-  edges.forEach((edge, index) => {
+  edges.forEach((edge) => {
     const fromPos = nodePositions.get(edge.from);
     const toPos = nodePositions.get(edge.to);
 
@@ -260,9 +396,15 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
     editor.createShapes(arrowShapes);
   }
 
-  // Zoom to fit
+  // Delete the loading box after flowchart is created
+  if (shapeExists(editor, 'shape:flowchartloadingbox')) {
+    editor.deleteShapes(['shape:flowchartloadingbox', 'shape:flowchartloadinglabel']);
+  }
+
+  // Gentler zoom - just zoom out a bit instead of fit
   setTimeout(() => {
-    editor.zoomToFit({ animation: { duration: 300 } });
+    const { x, y, z } = editor.getCamera();
+    editor.setCamera({ x, y, z: z * 0.5 }, { animation: { duration: 400 } });
   }, 100);
 
   console.log('=== FLOWCHART RENDERING COMPLETE ===');

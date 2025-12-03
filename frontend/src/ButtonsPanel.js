@@ -128,9 +128,12 @@ export default function ButtonsPanel({
     console.log('Generate Flowchart clicked. Description value:', currentDescription);
 
     setIsDiagramLoading(true);
-    const loadingText = 'Mermaid Markdown Generating...';
+    const markdownLoadingText = 'Mermaid Markdown Generating...';
+    const flowchartLoadingText = 'Flowchart generating...';
 
-    shapeHelpers.createOrUpdateMarkdownShapes(editor, loadingText);
+    // Show both loading boxes
+    shapeHelpers.createOrUpdateMarkdownShapes(editor, markdownLoadingText);
+    shapeHelpers.createOrUpdateFlowchartLoadingBox(editor, flowchartLoadingText);
 
     let diagram;
     if (!currentDescription || currentDescription.trim() === '' || currentDescription === 'Type here...') {
@@ -147,14 +150,13 @@ export default function ButtonsPanel({
     // Update markdown text box
     shapeHelpers.updateMarkdownShape(editor, diagram);
 
-    // Parse and render flowchart shapes
+    // Parse and render flowchart shapes (this will delete the loading box)
     const { nodes, edges } = parseMermaid(diagram);
     if (nodes.length > 0) {
       shapeHelpers.createFlowchartShapes(editor, nodes, edges);
     }
 
     setIsDiagramLoading(false);
-    shapeHelpers.zoomOut(editor);
   };
 
   // ----------------------------
@@ -191,19 +193,20 @@ export default function ButtonsPanel({
       // Step 2: Generate Flowchart
       console.log('Step 2: Generating Flowchart...');
       setIsDiagramLoading(true);
-      const loadingText2 = 'Mermaid Markdown Generating...';
-      shapeHelpers.createOrUpdateMarkdownShapes(editor, loadingText2);
+      const markdownLoadingText2 = 'Mermaid Markdown Generating...';
+      const flowchartLoadingText2 = 'Flowchart generating...';
+      shapeHelpers.createOrUpdateMarkdownShapes(editor, markdownLoadingText2);
+      shapeHelpers.createOrUpdateFlowchartLoadingBox(editor, flowchartLoadingText2);
       const diagram = await apiService.generateMermaidMarkdown(currentDescription, useCaseDescription, apiKey);
       shapeHelpers.updateMarkdownShape(editor, diagram);
 
-      // Parse and render flowchart shapes
+      // Parse and render flowchart shapes (this will delete the loading box)
       const { nodes, edges } = parseMermaid(diagram);
       if (nodes.length > 0) {
         shapeHelpers.createFlowchartShapes(editor, nodes, edges);
       }
 
       setIsDiagramLoading(false);
-      shapeHelpers.zoomOut(editor);
 
       console.log('All steps completed successfully!');
 
