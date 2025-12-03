@@ -314,11 +314,17 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
   console.log('Nodes:', nodes);
   console.log('Edges:', edges);
 
-  // Delete existing flowchart shapes (but not the loading box)
+  // Delete the loading box and label FIRST to avoid overlap
+  if (shapeExists(editor, 'shape:flowchartloadingbox')) {
+    console.log('Deleting flowchart loading box and label');
+    editor.deleteShapes(['shape:flowchartloadingbox', 'shape:flowchartloadinglabel']);
+  }
+
+  // Delete existing flowchart shapes
   const existingFlowchartShapes = editor.getCurrentPageShapes()
     .filter(shape => {
       const id = shape.id.toString();
-      return id.includes('flowchart') && !id.includes('flowchartloadingbox') && !id.includes('flowchartloadinglabel');
+      return id.includes('flowchart');
     });
   if (existingFlowchartShapes.length > 0) {
     console.log('Deleting existing flowchart shapes:', existingFlowchartShapes.length);
@@ -394,11 +400,6 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
   if (arrowShapes.length > 0) {
     console.log('Creating arrows:', arrowShapes.length);
     editor.createShapes(arrowShapes);
-  }
-
-  // Delete the loading box after flowchart is created
-  if (shapeExists(editor, 'shape:flowchartloadingbox')) {
-    editor.deleteShapes(['shape:flowchartloadingbox', 'shape:flowchartloadinglabel']);
   }
 
   // Gentler zoom - just zoom out a bit instead of fit
