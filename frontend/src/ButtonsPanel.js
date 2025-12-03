@@ -85,9 +85,13 @@ export default function ButtonsPanel({
   const handleGoClick = async () => {
     if (!buttonsEnabled) return;
 
-    console.log('Generate Use Case clicked. Description value:', description);
-    console.log('Description length:', description?.length);
-    console.log('Description trimmed:', description?.trim());
+    // Read description directly from the shape to get the latest value
+    const descriptionShape = editor.getShape('shape:1');
+    const currentDescription = descriptionShape?.props.text || '';
+
+    console.log('Generate Use Case clicked. Description value:', currentDescription);
+    console.log('Description length:', currentDescription?.length);
+    console.log('Description trimmed:', currentDescription?.trim());
 
     setIsUseCaseLoading(true);
     const loadingText = 'Use Case Description Generating...';
@@ -96,11 +100,11 @@ export default function ButtonsPanel({
     shapeHelpers.createOrUpdateUseCaseShapes(editor, loadingText);
 
     let useCaseDescription;
-    if (!description || description.trim() === '' || description === 'Type here...') {
+    if (!currentDescription || currentDescription.trim() === '' || currentDescription === 'Type here...') {
       shapeHelpers.updateDescriptionShape(editor, '');
       useCaseDescription = 'Please enter a description.';
     } else {
-      useCaseDescription = await apiService.generateUseCase(description, apiKey);
+      useCaseDescription = await apiService.generateUseCase(currentDescription, apiKey);
     }
 
     // Update the final text
@@ -117,7 +121,11 @@ export default function ButtonsPanel({
   const handleGenerateMermaidMarkdownClick = async () => {
     if (!buttonsEnabled) return;
 
-    console.log('Generate Flowchart clicked. Description value:', description);
+    // Read description directly from the shape to get the latest value
+    const descriptionShape = editor.getShape('shape:1');
+    const currentDescription = descriptionShape?.props.text || '';
+
+    console.log('Generate Flowchart clicked. Description value:', currentDescription);
 
     setIsDiagramLoading(true);
     const loadingText = 'Mermaid Markdown Generating...';
@@ -125,7 +133,7 @@ export default function ButtonsPanel({
     shapeHelpers.createOrUpdateMarkdownShapes(editor, loadingText);
 
     let diagram;
-    if (!description || description.trim() === '' || description === 'Type here...') {
+    if (!currentDescription || currentDescription.trim() === '' || currentDescription === 'Type here...') {
       shapeHelpers.updateDescriptionShape(editor, '');
       diagram = 'Please enter a description.';
     } else {
@@ -133,7 +141,7 @@ export default function ButtonsPanel({
         ? editor.getShape('shape:usecasebox').props.text
         : 'Use case not available';
 
-      diagram = await apiService.generateMermaidMarkdown(description, useCaseDescription, apiKey);
+      diagram = await apiService.generateMermaidMarkdown(currentDescription, useCaseDescription, apiKey);
     }
 
     // Update markdown text box
@@ -155,9 +163,13 @@ export default function ButtonsPanel({
   const handleRunAllClick = useCallback(async () => {
     if (!buttonsEnabled) return;
 
-    console.log('Run All clicked. Description value:', description);
+    // Read description directly from the shape to get the latest value
+    const descriptionShape = editor.getShape('shape:1');
+    const currentDescription = descriptionShape?.props.text || '';
 
-    if (!description || description.trim() === '' || description === 'Type here...') {
+    console.log('Run All clicked. Description value:', currentDescription);
+
+    if (!currentDescription || currentDescription.trim() === '' || currentDescription === 'Type here...') {
       shapeHelpers.updateDescriptionShape(editor, '');
       alert('Please enter a description first!');
       return;
@@ -171,7 +183,7 @@ export default function ButtonsPanel({
       setIsUseCaseLoading(true);
       const loadingText1 = 'Use Case Description Generating...';
       shapeHelpers.createOrUpdateUseCaseShapes(editor, loadingText1);
-      const useCaseDescription = await apiService.generateUseCase(description, apiKey);
+      const useCaseDescription = await apiService.generateUseCase(currentDescription, apiKey);
       shapeHelpers.updateUseCaseShape(editor, useCaseDescription);
       setIsUseCaseLoading(false);
       shapeHelpers.zoomOut(editor);
@@ -181,7 +193,7 @@ export default function ButtonsPanel({
       setIsDiagramLoading(true);
       const loadingText2 = 'Mermaid Markdown Generating...';
       shapeHelpers.createOrUpdateMarkdownShapes(editor, loadingText2);
-      const diagram = await apiService.generateMermaidMarkdown(description, useCaseDescription, apiKey);
+      const diagram = await apiService.generateMermaidMarkdown(currentDescription, useCaseDescription, apiKey);
       shapeHelpers.updateMarkdownShape(editor, diagram);
 
       // Parse and render flowchart shapes
@@ -204,7 +216,7 @@ export default function ButtonsPanel({
 
       alert(`Error in sequential execution: ${error.message}`);
     }
-  }, [buttonsEnabled, description, editor, apiKey]);
+  }, [buttonsEnabled, editor, apiKey]);
 
   // Connect the handleRunAllClick function to the canvas button
   useEffect(() => {
