@@ -278,11 +278,11 @@ function calculateHierarchicalLayout(nodes, edges) {
     levelGroups.get(level).push(node);
   });
 
-  // Calculate positions
+  // Calculate positions with improved spacing for cleaner layout
   const startX = 2200;
   const startY = 300;
-  const horizontalSpacing = 300;
-  const verticalSpacing = 200;
+  const horizontalSpacing = 400;  // Increased from 300 for better horizontal spacing
+  const verticalSpacing = 250;     // Increased from 200 for better vertical spacing
 
   levelGroups.forEach((nodesAtLevel, level) => {
     const levelWidth = nodesAtLevel.length * horizontalSpacing;
@@ -318,6 +318,12 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
   if (shapeExists(editor, 'shape:flowchartloadingbox')) {
     console.log('Deleting flowchart loading box and label');
     editor.deleteShapes(['shape:flowchartloadingbox', 'shape:flowchartloadinglabel']);
+  }
+
+  // Delete markdown box and label (mermaid code should not be visible on UI)
+  if (shapeExists(editor, 'shape:markdownbox')) {
+    console.log('Deleting markdown box and label');
+    editor.deleteShapes(['shape:markdownbox', 'shape:markdownlabel']);
   }
 
   // Delete existing flowchart shapes
