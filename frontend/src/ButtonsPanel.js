@@ -128,11 +128,9 @@ export default function ButtonsPanel({
     console.log('Generate Flowchart clicked. Description value:', currentDescription);
 
     setIsDiagramLoading(true);
-    const markdownLoadingText = 'Mermaid Markdown Generating...';
     const flowchartLoadingText = 'Flowchart generating...';
 
-    // Show both loading boxes
-    shapeHelpers.createOrUpdateMarkdownShapes(editor, markdownLoadingText);
+    // Show flowchart loading box only
     shapeHelpers.createOrUpdateFlowchartLoadingBox(editor, flowchartLoadingText);
 
     let diagram;
@@ -146,9 +144,6 @@ export default function ButtonsPanel({
 
       diagram = await apiService.generateMermaidMarkdown(currentDescription, useCaseDescription, apiKey);
     }
-
-    // Update markdown text box
-    shapeHelpers.updateMarkdownShape(editor, diagram);
 
     // Parse and render flowchart shapes (this will delete the loading box)
     const { nodes, edges } = parseMermaid(diagram);
@@ -193,12 +188,9 @@ export default function ButtonsPanel({
       // Step 2: Generate Flowchart
       console.log('Step 2: Generating Flowchart...');
       setIsDiagramLoading(true);
-      const markdownLoadingText2 = 'Mermaid Markdown Generating...';
       const flowchartLoadingText2 = 'Flowchart generating...';
-      shapeHelpers.createOrUpdateMarkdownShapes(editor, markdownLoadingText2);
       shapeHelpers.createOrUpdateFlowchartLoadingBox(editor, flowchartLoadingText2);
       const diagram = await apiService.generateMermaidMarkdown(currentDescription, useCaseDescription, apiKey);
-      shapeHelpers.updateMarkdownShape(editor, diagram);
 
       // Parse and render flowchart shapes (this will delete the loading box)
       const { nodes, edges } = parseMermaid(diagram);
