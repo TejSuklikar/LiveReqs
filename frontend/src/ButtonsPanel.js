@@ -84,7 +84,11 @@ export default function ButtonsPanel({
   // ----------------------------
   const handleGoClick = async () => {
     if (!buttonsEnabled) return;
-    
+
+    console.log('Generate Use Case clicked. Description value:', description);
+    console.log('Description length:', description?.length);
+    console.log('Description trimmed:', description?.trim());
+
     setIsUseCaseLoading(true);
     const loadingText = 'Use Case Description Generating...';
 
@@ -92,8 +96,8 @@ export default function ButtonsPanel({
     shapeHelpers.createOrUpdateUseCaseShapes(editor, loadingText);
 
     let useCaseDescription;
-    if (description.trim() === '' || description === 'Type here...') {
-      shapeHelpers.updateDescriptionShape(editor, 'Type here...');
+    if (!description || description.trim() === '' || description === 'Type here...') {
+      shapeHelpers.updateDescriptionShape(editor, '');
       useCaseDescription = 'Please enter a description.';
     } else {
       useCaseDescription = await apiService.generateUseCase(description, apiKey);
@@ -113,14 +117,16 @@ export default function ButtonsPanel({
   const handleGenerateMermaidMarkdownClick = async () => {
     if (!buttonsEnabled) return;
 
+    console.log('Generate Flowchart clicked. Description value:', description);
+
     setIsDiagramLoading(true);
     const loadingText = 'Mermaid Markdown Generating...';
 
     shapeHelpers.createOrUpdateMarkdownShapes(editor, loadingText);
 
     let diagram;
-    if (description.trim() === '' || description === 'Type here...') {
-      shapeHelpers.updateDescriptionShape(editor, 'Type here...');
+    if (!description || description.trim() === '' || description === 'Type here...') {
+      shapeHelpers.updateDescriptionShape(editor, '');
       diagram = 'Please enter a description.';
     } else {
       const useCaseDescription = shapeHelpers.shapeExists(editor, 'shape:usecasebox')
@@ -149,8 +155,10 @@ export default function ButtonsPanel({
   const handleRunAllClick = useCallback(async () => {
     if (!buttonsEnabled) return;
 
-    if (description.trim() === '' || description === 'Type here...') {
-      shapeHelpers.updateDescriptionShape(editor, 'Type here...');
+    console.log('Run All clicked. Description value:', description);
+
+    if (!description || description.trim() === '' || description === 'Type here...') {
+      shapeHelpers.updateDescriptionShape(editor, '');
       alert('Please enter a description first!');
       return;
     }

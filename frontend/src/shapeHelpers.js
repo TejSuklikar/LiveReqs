@@ -24,10 +24,10 @@ export const createOrUpdateUseCaseShapes = (editor, loadingText) => {
       {
         id: 'shape:usecasebox',
         type: 'geo',
-        x: 430,
-        y: 200,
+        x: 750,
+        y: 250,
         props: {
-          w: 450,
+          w: 600,
           h: 550,
           geo: 'rectangle',
           color: 'black',
@@ -43,8 +43,8 @@ export const createOrUpdateUseCaseShapes = (editor, loadingText) => {
       {
         id: 'shape:usecaselabel',
         type: 'text',
-        x: 500,
-        y: 150,
+        x: 750,
+        y: 200,
         props: {
           text: 'Use Case',
           size: 'l',
@@ -88,10 +88,10 @@ export const createOrUpdateMarkdownShapes = (editor, loadingText) => {
       {
         id: 'shape:markdownbox',
         type: 'geo',
-        x: 900,
-        y: 200,
+        x: 1450,
+        y: 250,
         props: {
-          w: 500,
+          w: 600,
           h: 600,
           geo: 'rectangle',
           color: 'black',
@@ -107,8 +107,8 @@ export const createOrUpdateMarkdownShapes = (editor, loadingText) => {
       {
         id: 'shape:markdownlabel',
         type: 'text',
-        x: 1000,
-        y: 150,
+        x: 1450,
+        y: 200,
         props: {
           text: 'Markdown',
           size: 'l',
@@ -175,10 +175,10 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
   const shapes = [];
 
   // Layout configuration
-  const startX = 1500;
-  const startY = 200;
-  const verticalSpacing = 180;
-  const horizontalSpacing = 350;
+  const startX = 2200;
+  const startY = 250;
+  const verticalSpacing = 200;
+  const horizontalSpacing = 400;
 
   // Simple top-to-bottom layout
   // Build a graph to understand flow

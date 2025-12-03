@@ -12,27 +12,27 @@ export default function TldrawCanvas({ editor, setEditor, description, setDescri
       {
         id: 'shape:1',
         type: 'geo',
-        x: 10,
-        y: 200,
+        x: 50,
+        y: 250,
         props: {
-          w: 400,
-          h: 150,
+          w: 600,
+          h: 400,
           geo: 'rectangle',
           color: 'black',
           fill: 'none',
           dash: 'draw',
           size: 'm',
           font: 'draw',
-          text: 'Type here...',
-          align: 'middle',
-          verticalAlign: 'middle',
+          text: '',
+          align: 'start',
+          verticalAlign: 'start',
         },
       },
       {
         id: 'shape:2',
         type: 'text',
-        x: 10,
-        y: 150,
+        x: 50,
+        y: 200,
         props: {
           text: 'Description',
           size: 'l',
@@ -42,13 +42,27 @@ export default function TldrawCanvas({ editor, setEditor, description, setDescri
       },
     ]);
 
-    // Listen for updates to the editor—so we can track changes to shape #1's text
-    editorInstance.on('update', () => {
+    // Listen for shape changes to track changes to shape #1's text
+    const updateDescription = () => {
       const descriptionShape = editorInstance.getShape('shape:1');
-      if (descriptionShape) {
+      if (descriptionShape && descriptionShape.props.text !== undefined) {
+        console.log('Description updated:', descriptionShape.props.text);
         setDescription(descriptionShape.props.text);
       }
-    });
+    };
+
+    // Listen to store changes for more reliable updates
+    editorInstance.store.listen(
+      (entry) => {
+        if (entry.changes.updated && entry.changes.updated['shape:1']) {
+          updateDescription();
+        }
+      },
+      { source: 'user', scope: 'document' }
+    );
+
+    // Also update on any change event as backup
+    editorInstance.on('change', updateDescription);
   };
 
   // Allow loading a .tldr file to restore a saved canvas
