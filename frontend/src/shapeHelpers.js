@@ -38,7 +38,6 @@ export const createOrUpdateUseCaseShapes = (editor, loadingText) => {
           text: loadingText,
           align: 'middle',
           verticalAlign: 'middle',
-          autoSize: false,
         },
       },
       {
@@ -78,7 +77,6 @@ export const updateUseCaseShape = (editor, finalText) => {
           verticalAlign: 'start',
           font: 'sans',
           dash: 'solid',
-          autoSize: false,
         },
       },
     ]);
@@ -106,7 +104,6 @@ export const createOrUpdateMarkdownShapes = (editor, loadingText) => {
           text: loadingText,
           align: 'middle',
           verticalAlign: 'middle',
-          autoSize: false,
         },
       },
       {
@@ -146,7 +143,6 @@ export const updateMarkdownShape = (editor, finalText) => {
           verticalAlign: 'start',
           font: 'sans',
           dash: 'solid',
-          autoSize: false,
         },
       },
     ]);
@@ -425,7 +421,6 @@ function positionNodesWithCollisionDetection(nodes, layers, edges, config, mainF
           font: 'sans',
           align: 'middle',
           verticalAlign: 'middle',
-          autoSize: false,
         },
       });
 
@@ -473,7 +468,6 @@ function positionNodesWithCollisionDetection(nodes, layers, edges, config, mainF
           font: 'sans',
           align: 'middle',
           verticalAlign: 'middle',
-          autoSize: false,
         },
       });
 
