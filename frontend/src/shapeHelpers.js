@@ -37,7 +37,7 @@ export const createOrUpdateUseCaseShapes = (editor, loadingText) => {
         x: 750,
         y: 200,
         props: {
-          text: 'Use Case',
+          richText: toRichText('Use Case'),
           size: 'l',
           font: 'sans',
           color: 'black',
@@ -49,7 +49,7 @@ export const createOrUpdateUseCaseShapes = (editor, loadingText) => {
         x: 760,
         y: 260,
         props: {
-          text: loadingText,
+          richText: toRichText(loadingText),
           size: 'm',
           font: 'sans',
           color: 'black',
@@ -64,7 +64,7 @@ export const createOrUpdateUseCaseShapes = (editor, loadingText) => {
         {
           id: 'shape:usecasetext',
           type: 'text',
-          props: { text: loadingText },
+          props: { richText: toRichText(loadingText) },
         },
       ]);
     } else {
@@ -76,7 +76,7 @@ export const createOrUpdateUseCaseShapes = (editor, loadingText) => {
           x: 760,
           y: 260,
           props: {
-            text: loadingText,
+            richText: toRichText(loadingText),
             size: 'm',
             font: 'sans',
             color: 'black',
@@ -96,7 +96,7 @@ export const updateUseCaseShape = (editor, finalText) => {
         id: 'shape:usecasetext',
         type: 'text',
         props: {
-          text: finalText,
+          richText: toRichText(finalText),
         },
       },
     ]);
@@ -128,7 +128,7 @@ export const createOrUpdateMarkdownShapes = (editor, loadingText) => {
         x: 1450,
         y: 200,
         props: {
-          text: 'Markdown',
+          richText: toRichText('Markdown'),
           size: 'l',
           font: 'sans',
           color: 'black',
@@ -140,7 +140,7 @@ export const createOrUpdateMarkdownShapes = (editor, loadingText) => {
         x: 1460,
         y: 260,
         props: {
-          text: loadingText,
+          richText: toRichText(loadingText),
           size: 'm',
           font: 'sans',
           color: 'black',
@@ -155,7 +155,7 @@ export const createOrUpdateMarkdownShapes = (editor, loadingText) => {
         {
           id: 'shape:markdowntext',
           type: 'text',
-          props: { text: loadingText },
+          props: { richText: toRichText(loadingText) },
         },
       ]);
     } else {
@@ -167,7 +167,7 @@ export const createOrUpdateMarkdownShapes = (editor, loadingText) => {
           x: 1460,
           y: 260,
           props: {
-            text: loadingText,
+            richText: toRichText(loadingText),
             size: 'm',
             font: 'sans',
             color: 'black',
@@ -187,7 +187,7 @@ export const updateMarkdownShape = (editor, finalText) => {
         id: 'shape:markdowntext',
         type: 'text',
         props: {
-          text: finalText,
+          richText: toRichText(finalText),
         },
       },
     ]);
@@ -227,7 +227,7 @@ export const createOrUpdateFlowchartLoadingBox = (editor, loadingText) => {
         x: 1450,
         y: 200,
         props: {
-          text: 'Flowchart',
+          richText: toRichText('Flowchart'),
           size: 'l',
           font: 'sans',
           color: 'black',
@@ -239,7 +239,7 @@ export const createOrUpdateFlowchartLoadingBox = (editor, loadingText) => {
         x: 1500,
         y: 320,
         props: {
-          text: loadingText,
+          richText: toRichText(loadingText),
           size: 'l',
           font: 'sans',
           color: 'white',
@@ -253,7 +253,7 @@ export const createOrUpdateFlowchartLoadingBox = (editor, loadingText) => {
         {
           id: 'shape:flowchartloadingtext',
           type: 'text',
-          props: { text: loadingText },
+          props: { richText: toRichText(loadingText) },
         },
       ]);
     } else {
@@ -265,7 +265,7 @@ export const createOrUpdateFlowchartLoadingBox = (editor, loadingText) => {
           x: 1500,
           y: 320,
           props: {
-            text: loadingText,
+            richText: toRichText(loadingText),
             size: 'l',
             font: 'sans',
             color: 'white',

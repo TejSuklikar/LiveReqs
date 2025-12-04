@@ -26,7 +26,7 @@ export const createInitialShapes = (app) => {
       x: 50,
       y: 150,
       props: {
-        text: 'Description',
+        richText: toRichText('Description'),
         size: 'm',
         font: 'sans',
         color: 'black',

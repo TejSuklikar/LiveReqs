@@ -1,5 +1,6 @@
 import React from 'react';
 import { Tldraw } from '@tldraw/tldraw';
+import { toRichText } from '@tldraw/editor';
 
 export default function TldrawCanvas({ editor, setEditor, description, setDescription }) {
 
@@ -31,7 +32,7 @@ export default function TldrawCanvas({ editor, setEditor, description, setDescri
         x: 60,
         y: 260,
         props: {
-          text: '',
+          richText: toRichText(''),
           size: 'm',
           font: 'draw',
           color: 'black',
@@ -44,7 +45,7 @@ export default function TldrawCanvas({ editor, setEditor, description, setDescri
         x: 50,
         y: 200,
         props: {
-          text: 'Description',
+          richText: toRichText('Description'),
           size: 'l',
           font: 'draw',
           color: 'black',
