@@ -5,12 +5,16 @@ import { createInitialShapes } from './initialShapes';
 import { createMeasureElement, updateRectangleSize, removeMeasureElement } from './textMeasurement';
 import { setupEventHandlers } from './eventHandlers';
 import ButtonsPanel from './ButtonsPanel';
+import { FlowNodeShapeUtil } from './shapes/FlowNodeShapeUtil';
 
 export default function App() {
   // State management for the app
   const [editor, setEditor] = useState(null);
   const [description, setDescription] = useState('Type here...');
   const [notification, setNotification] = useState('');
+
+  // Register custom shape utils
+  const customShapeUtils = [FlowNodeShapeUtil];
 
   const onMount = (app) => {
     // Store the editor instance in state
@@ -31,8 +35,11 @@ export default function App() {
     // Set up listener to sync description with text shape changes
     const handleShapeChanged = () => {
       const textShape = app.getShape('shape:1');
-      if (textShape && textShape.props.text !== description) {
-        setDescription(textShape.props.text);
+      if (textShape && textShape.props.richText) {
+        const textContent = textShape.props.richText.text || '';
+        if (textContent !== description) {
+          setDescription(textContent);
+        }
       }
     };
 
@@ -49,7 +56,7 @@ export default function App() {
 
   return (
     <div style={{ position: 'fixed', inset: 0 }}>
-      <Tldraw onMount={onMount} />
+      <Tldraw onMount={onMount} shapeUtils={customShapeUtils} />
       
       {/* Render the buttons panel if editor is ready */}
       {editor && (

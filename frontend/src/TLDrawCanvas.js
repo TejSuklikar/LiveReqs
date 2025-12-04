@@ -8,6 +8,7 @@ export default function TldrawCanvas({ editor, setEditor, description, setDescri
     setEditor(editorInstance);
 
     // Create initial shapes on the Tldraw canvas
+    // Note: This file appears to be unused, but keeping it for reference
     editorInstance.createShapes([
       {
         id: 'shape:1',
@@ -22,10 +23,19 @@ export default function TldrawCanvas({ editor, setEditor, description, setDescri
           fill: 'none',
           dash: 'draw',
           size: 'm',
-          font: 'draw',
+        },
+      },
+      {
+        id: 'shape:1text',
+        type: 'text',
+        x: 60,
+        y: 260,
+        props: {
           text: '',
-          align: 'start',
-          verticalAlign: 'start',
+          size: 'm',
+          font: 'draw',
+          color: 'black',
+          w: 580,
         },
       },
       {
