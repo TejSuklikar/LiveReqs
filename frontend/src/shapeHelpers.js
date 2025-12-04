@@ -6,14 +6,8 @@ export const shapeExists = (editor, shapeId) => editor && editor.getShape(shapeI
 // Helper: Zoom out by reducing zoom level
 export const zoomOut = (editor) => {
   if (!editor) return;
-
-  // Get the current camera state
   const { x, y, z } = editor.getCamera();
-
-  // Calculate new zoom level (reduce by 10%)
   const newZoom = z * 0.85;
-
-  // Update the camera with the new zoom level
   editor.setCamera({ x, y, z: newZoom });
 };
 
@@ -167,8 +161,8 @@ export const createOrUpdateFlowchartLoadingBox = (editor, loadingText) => {
       {
         id: 'shape:flowchartloadingbox',
         type: 'geo',
-        x: 2200,
-        y: 300,
+        x: 1450,
+        y: 250,
         props: {
           w: 400,
           h: 200,
@@ -186,8 +180,8 @@ export const createOrUpdateFlowchartLoadingBox = (editor, loadingText) => {
       {
         id: 'shape:flowchartloadinglabel',
         type: 'text',
-        x: 2200,
-        y: 250,
+        x: 1450,
+        y: 200,
         props: {
           text: 'Flowchart',
           size: 'l',
@@ -208,85 +202,128 @@ export const createOrUpdateFlowchartLoadingBox = (editor, loadingText) => {
 };
 
 /**
- * Calculate hierarchical layout for flowchart nodes
- * @param {Array} nodes - Parsed nodes
- * @param {Array} edges - Parsed edges
- * @returns {Map} nodeId -> {x, y, level, column}
+ * ROBUST hierarchical layout that works regardless of Mermaid syntax issues
+ * Uses multiple strategies to assign levels correctly
  */
 function calculateHierarchicalLayout(nodes, edges) {
+  console.log('=== ROBUST LAYOUT CALCULATION START ===');
+  console.log('Input nodes:', nodes.length);
+  console.log('Input edges:', edges.length);
+
   const positions = new Map();
+  const levels = new Map();
+  
+  // Build adjacency maps
   const inDegree = new Map();
   const outEdges = new Map();
-  const levels = new Map();
-
-  // Initialize structures
+  
   nodes.forEach(node => {
     inDegree.set(node.id, 0);
     outEdges.set(node.id, []);
   });
-
-  // Build adjacency info
+  
   edges.forEach(edge => {
-    inDegree.set(edge.to, (inDegree.get(edge.to) || 0) + 1);
-    const outList = outEdges.get(edge.from) || [];
-    outList.push(edge.to);
-    outEdges.set(edge.from, outList);
+    if (inDegree.has(edge.to)) {
+      inDegree.set(edge.to, inDegree.get(edge.to) + 1);
+    }
+    if (outEdges.has(edge.from)) {
+      outEdges.get(edge.from).push(edge.to);
+    }
   });
 
-  // Find root nodes (no incoming edges)
+  // Strategy 1: Try BFS from roots
   const roots = nodes.filter(node => inDegree.get(node.id) === 0);
+  console.log('Found', roots.length, 'root nodes:', roots.map(r => r.id));
+  
+  if (roots.length > 0) {
+    // BFS traversal
+    const queue = [];
+    roots.forEach(root => {
+      levels.set(root.id, 0);
+      queue.push(root.id);
+    });
 
-  // If no roots found, use first node
-  if (roots.length === 0 && nodes.length > 0) {
-    roots.push(nodes[0]);
+    while (queue.length > 0) {
+      const nodeId = queue.shift();
+      const currentLevel = levels.get(nodeId);
+      const children = outEdges.get(nodeId) || [];
+
+      children.forEach(childId => {
+        const newLevel = currentLevel + 1;
+        if (!levels.has(childId) || levels.get(childId) < newLevel) {
+          levels.set(childId, newLevel);
+          if (!queue.includes(childId)) {
+            queue.push(childId);
+          }
+        }
+      });
+    }
   }
 
-  // BFS to assign levels
-  const queue = [];
-  roots.forEach(root => {
-    levels.set(root.id, 0);
-    queue.push(root.id);
-  });
-
-  while (queue.length > 0) {
-    const nodeId = queue.shift();
-    const currentLevel = levels.get(nodeId);
-    const children = outEdges.get(nodeId) || [];
-
-    children.forEach(childId => {
-      if (!levels.has(childId) || levels.get(childId) < currentLevel + 1) {
-        levels.set(childId, currentLevel + 1);
-        queue.push(childId);
+  // Strategy 2: For nodes still without levels, use edge-based assignment
+  let changed = true;
+  let iterations = 0;
+  while (changed && iterations < 100) {
+    changed = false;
+    iterations++;
+    
+    edges.forEach(edge => {
+      const fromLevel = levels.get(edge.from);
+      const toLevel = levels.get(edge.to);
+      
+      if (fromLevel !== undefined && (toLevel === undefined || toLevel <= fromLevel)) {
+        levels.set(edge.to, fromLevel + 1);
+        changed = true;
       }
     });
   }
 
-  // Handle nodes without level (disconnected)
+  // Strategy 3: Assign remaining nodes to level 0
   nodes.forEach(node => {
     if (!levels.has(node.id)) {
+      console.warn('Node', node.id, 'has no level, assigning to 0');
       levels.set(node.id, 0);
     }
   });
 
   // Group nodes by level
   const levelGroups = new Map();
+  let maxLevel = 0;
+  
   nodes.forEach(node => {
     const level = levels.get(node.id);
+    maxLevel = Math.max(maxLevel, level);
+    
     if (!levelGroups.has(level)) {
       levelGroups.set(level, []);
     }
     levelGroups.get(level).push(node);
   });
 
-  // Calculate positions with improved spacing for cleaner layout
-  const startX = 2200;
-  const startY = 300;
-  const horizontalSpacing = 400;  // Increased from 300 for better horizontal spacing
-  const verticalSpacing = 250;     // Increased from 200 for better vertical spacing
+  console.log('Max level:', maxLevel);
+  console.log('Nodes per level:');
+  levelGroups.forEach((nodesAtLevel, level) => {
+    console.log(`  Level ${level}: ${nodesAtLevel.length} nodes`);
+  });
+
+  // Calculate positions
+  const startX = 1450;
+  const startY = 250;
+  const horizontalSpacing = 300;
+  const verticalSpacing = 250;
+
+  // Find max nodes in any level for centering
+  let maxNodesInLevel = 0;
+  levelGroups.forEach((nodesAtLevel) => {
+    maxNodesInLevel = Math.max(maxNodesInLevel, nodesAtLevel.length);
+  });
+
+  const maxLevelWidth = maxNodesInLevel * horizontalSpacing;
 
   levelGroups.forEach((nodesAtLevel, level) => {
     const levelWidth = nodesAtLevel.length * horizontalSpacing;
-    const levelStartX = startX - (levelWidth / 2);
+    const offset = (maxLevelWidth - levelWidth) / 2;
+    const levelStartX = startX + offset;
 
     nodesAtLevel.forEach((node, index) => {
       const x = levelStartX + (index * horizontalSpacing);
@@ -295,14 +332,12 @@ function calculateHierarchicalLayout(nodes, edges) {
     });
   });
 
+  console.log('=== LAYOUT CALCULATION COMPLETE ===');
   return positions;
 }
 
 /**
- * Creates flowchart shapes from parsed Mermaid data using hierarchical layout
- * @param {Editor} editor - TLDraw editor instance
- * @param {Array} nodes - Parsed nodes from mermaidParser
- * @param {Array} edges - Parsed edges from mermaidParser
+ * Creates flowchart shapes from parsed Mermaid data
  */
 export const createFlowchartShapes = (editor, nodes, edges) => {
   if (!nodes || nodes.length === 0) {
@@ -311,38 +346,27 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
   }
 
   console.log('=== FLOWCHART RENDERING START ===');
-  console.log('Nodes:', nodes);
-  console.log('Edges:', edges);
 
-  // Delete the loading box and label FIRST to avoid overlap
+  // Delete loading and markdown boxes
   if (shapeExists(editor, 'shape:flowchartloadingbox')) {
-    console.log('Deleting flowchart loading box and label');
     editor.deleteShapes(['shape:flowchartloadingbox', 'shape:flowchartloadinglabel']);
   }
-
-  // Delete markdown box and label (mermaid code should not be visible on UI)
   if (shapeExists(editor, 'shape:markdownbox')) {
-    console.log('Deleting markdown box and label');
     editor.deleteShapes(['shape:markdownbox', 'shape:markdownlabel']);
   }
 
   // Delete existing flowchart shapes
   const existingFlowchartShapes = editor.getCurrentPageShapes()
-    .filter(shape => {
-      const id = shape.id.toString();
-      return id.includes('flowchart');
-    });
+    .filter(shape => shape.id.toString().includes('flowchart'));
   if (existingFlowchartShapes.length > 0) {
-    console.log('Deleting existing flowchart shapes:', existingFlowchartShapes.length);
     editor.deleteShapes(existingFlowchartShapes.map(s => s.id));
   }
 
-  // Calculate hierarchical layout
+  // Calculate layout
   const nodePositions = calculateHierarchicalLayout(nodes, edges);
 
+  // Create node shapes
   const shapes = [];
-
-  // Create shapes at calculated positions
   nodes.forEach((node) => {
     const pos = nodePositions.get(node.id);
     const shapeConfig = getShapeConfigForNode(node);
@@ -367,11 +391,7 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
     });
   });
 
-  console.log('Creating shapes:', shapes.length);
-
-  // Create shapes
-  const createdShapes = editor.createShapes(shapes);
-  console.log('Created shapes:', createdShapes);
+  editor.createShapes(shapes);
 
   // Create arrows
   const arrowShapes = [];
@@ -404,11 +424,10 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
   });
 
   if (arrowShapes.length > 0) {
-    console.log('Creating arrows:', arrowShapes.length);
     editor.createShapes(arrowShapes);
   }
 
-  // Gentler zoom - just zoom out a bit instead of fit
+  // Zoom out
   setTimeout(() => {
     const { x, y, z } = editor.getCamera();
     editor.setCamera({ x, y, z: z * 0.5 }, { animation: { duration: 400 } });
@@ -417,17 +436,14 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
   console.log('=== FLOWCHART RENDERING COMPLETE ===');
 };
 
-/**
- * Get shape configuration based on node type
- */
 function getShapeConfigForNode(node) {
   switch (node.type) {
     case 'ellipse':
-      return { geo: 'ellipse', w: 200, h: 120, color: 'green', fill: 'solid' };
+      return { geo: 'ellipse', w: 220, h: 140, color: 'green', fill: 'solid' };
     case 'diamond':
-      return { geo: 'diamond', w: 180, h: 180, color: 'red', fill: 'none' };
+      return { geo: 'diamond', w: 200, h: 200, color: 'red', fill: 'none' };
     case 'rectangle':
     default:
-      return { geo: 'rectangle', w: 220, h: 120, color: 'blue', fill: 'none' };
+      return { geo: 'rectangle', w: 240, h: 140, color: 'blue', fill: 'none' };
   }
 }

@@ -45,8 +45,8 @@ export default function ButtonsPanel({
   // Get validation message
   const getValidationMessage = () => {
     if (!apiKey) return '';
-    if (isApiKeyValid) return 'API key format is valid';
-    return 'Invalid API key format (should start with sk-ant-)';
+    if (isApiKeyValid) return 'API key is valid';
+    return 'Invalid API key (should start with sk-ant-)';
   };
 
   // Get validation message color

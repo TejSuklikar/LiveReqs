@@ -6,107 +6,78 @@ const router = express.Router();
 
 // Define a POST endpoint for generating Mermaid markdown from a use case description
 router.post('/', async (req, res) => {
-  const { description, useCaseDescription, apiKey } = req.body; // Extract the description, use case description, and API key from the request body
-  const anthropic = new Anthropic({ apiKey }); // Initialize the Anthropic API client with the provided API key
+  const { description, useCaseDescription, apiKey } = req.body;
+  const anthropic = new Anthropic({ apiKey });
 
-  // Define the prompt to be sent to the Anthropic API, requesting the generation of Mermaid markdown
-  const prompt = `You are an expert at analyzing use cases and creating structured flowchart representations.
+  const prompt = `You are an expert at creating Mermaid flowcharts with VERTICAL TOP-DOWN layout.
 
-Analyze the provided use case and generate a detailed, structured flowchart specification that captures ALL flows and scenarios.
+CRITICAL: Generate a flowchart where nodes are arranged in VERTICAL LEVELS, NOT horizontally in a single line.
+
+**MANDATORY Structure:**
+1. graph TD (Top-Down direction)
+2. Main flow: Start --> Step1 --> Step2 --> Step3 --> ... --> End
+3. Each node connects to the NEXT node in the sequence using -->
+4. Alternate flows branch using -.-> and rejoin
+
+**Example of CORRECT VERTICAL structure:**
+graph TD
+    Start[Begin] --> A[Step 1]
+    A --> B[Step 2]
+    B --> C[Step 3]
+    C --> End([Success])
+    
+    B -.->|Error| E[Handle error]
+    E --> B
+
+**Example of WRONG HORIZONTAL structure (DO NOT DO THIS):**
+graph TD
+    Start[Begin] A[Step 1] B[Step 2] C[Step 3]
+
+The WRONG example has no arrows connecting nodes - this creates a horizontal layout!
 
 **Your Task:**
-Create a comprehensive flowchart structure that represents:
-1. The complete Basic Flow as the main path
-2. Every alternate flow as branching paths (in sequential order: 2A, 2B, 3A, 3B, etc.)
-3. All decision points where the flow can diverge
-4. All possible end states (Success, Failure, Partial Success, etc.)
-
-**Flowchart Structure Requirements:**
-
-1. **Nodes (Steps):**
-   - Each step in the Basic Flow should be a distinct node
-   - Each alternate flow should have its own nodes
-   - Decision points should be clearly identified
-   - Start and end states should be explicit
-
-2. **Connections (Flow):**
-   - Show the sequence of steps in the Basic Flow
-   - Show how alternate flows branch off from specific steps IN ORDER (2A, 2B, then 3A, 3B, etc.)
-   - Show where alternate flows rejoin the Basic Flow or reach their own end states
-   - Label decision branches clearly (e.g., "If successful", "If error occurs")
-
-3. **Node Types:**
-   - Start: The beginning of the use case
-   - Action: A step where an actor or system performs an action
-   - Decision: A point where the flow branches based on a condition
-   - End: A terminal state (Success, Failure, etc.)
-
-4. **Flow Labels:**
-   - Main path: Primary sequence through Basic Flow
-   - Alternate flows: Labeled with their identifier in sequential order (2A, 2B, 3A, 3B, 4A, etc.)
-   - Decision branches: Labeled with the condition (Yes/No, Success/Failure, etc.)
-
-**Output Format:**
-Generate a Mermaid flowchart using graph TD (top-down) syntax that clearly represents this structure.
+Convert the following use case into a Mermaid flowchart following the CORRECT vertical structure.
 
 **Requirements:**
-- Use solid arrows (-->) for the main Basic Flow
-- Use dotted arrows (-.->)  for alternate flows branching off
-- Use decision nodes {...} for any branching points
-- Use rectangular nodes [...] for actions
-- Label all branches with clear conditions
-- Organize alternate flows sequentially (all step 2 alternates together, then all step 3 alternates, etc.)
-- Do NOT include markdown code fences (\`\`\`mermaid)
-- Do NOT include comments starting with %%
-- Make node labels concise but descriptive (max 60 characters)
-- Ensure every alternate flow path is complete (shows where it goes)
+1. Every node in the main flow MUST connect to the next using -->
+2. Start with: Start[...] --> FirstStep[...]
+3. Continue chain: FirstStep --> SecondStep --> ThirdStep --> etc.
+4. End with: LastStep --> End([Success])
+5. Add alternate flows with -.-> that branch and rejoin
+6. Use {...} for decision points only
+7. NO standalone nodes without connections
 
-**Example Pattern:**
-\`\`\`
-graph TD
-    Start[Start: Use Case Initiated] --> Step1[User performs action]
-    Step1 --> Step2[System validates input]
-    Step2 --> Decision1{Input valid?}
-    Decision1 -->|Yes| Step3[System processes request]
-    Step3 --> End1[End: Success]
+**Node Types:**
+- Rectangle [...] for actions and steps
+- Diamond {...} for decisions ONLY
+- Ellipse (...) for end states ONLY
 
-    Decision1 -.->|No: 2A| Alt2A1[System displays error]
-    Alt2A1 --> Alt2A2[User corrects input]
-    Alt2A2 --> Step2
+**Output Format:**
+- Start with: graph TD
+- Only Mermaid syntax, NO code fences
+- NO comments with %%
+- NO explanations
 
-    Step2 -.->|2B: Timeout| Alt2B1[System logs timeout]
-    Alt2B1 --> End2[End: Failure]
+**Input Use Case:**
+${useCaseDescription}
 
-    Step3 -.->|3A: Processing Error| Alt3A1[System retries operation]
-    Alt3A1 --> Step3
-\`\`\`
-
-**Inputs:**
-
-Description: ${description}
-
-Use Case: ${useCaseDescription}
-
-Generate the complete Mermaid flowchart now (output ONLY the flowchart syntax, no explanations):`; // Include both the description and the detailed use case in the prompt
+**Generate the vertical flowchart now:**`;
 
   try {
-    // Call the Anthropic API with retry logic to generate the Mermaid markdown
     const msg = await callAnthropicWithRetry(anthropic, {
-      model: 'claude-opus-4-20250514', // Specify the model to use
-      max_tokens: 4000, // Limit the number of tokens in the response
-      temperature: 0, // Set temperature for deterministic output
+      model: 'claude-opus-4-20250514',
+      max_tokens: 4000,
+      temperature: 0,
       messages: [
         {
           role: 'user',
-          content: prompt, // Provide a simple instruction as the content for the user message
+          content: prompt,
         },
       ],
     });
 
-    // Respond with the generated Mermaid markdown
     res.json({ completion: msg.content[0].text });
   } catch (error) {
-    // Log and respond with an error if the API call fails
     console.error('Error calling Claude API:', error);
     res.status(500).json({ error: 'Failed to generate mermaid markdown' });
   }
