@@ -1,4 +1,5 @@
 import { createShapeId } from 'tldraw';
+import { toRichText } from '@tldraw/editor';
 
 // Helper: Check if a shape with a given ID exists
 export const shapeExists = (editor, shapeId) => editor && editor.getShape(shapeId) !== undefined;
@@ -28,10 +29,6 @@ export const createOrUpdateUseCaseShapes = (editor, loadingText) => {
           fill: 'none',
           dash: 'solid',
           size: 'm',
-          font: 'sans',
-          text: loadingText,
-          align: 'middle',
-          verticalAlign: 'middle',
         },
       },
       {
@@ -46,31 +43,60 @@ export const createOrUpdateUseCaseShapes = (editor, loadingText) => {
           color: 'black',
         },
       },
-    ]);
-  } else {
-    editor.updateShapes([
       {
-        id: 'shape:usecasebox',
-        type: 'geo',
-        props: { text: loadingText },
+        id: 'shape:usecasetext',
+        type: 'text',
+        x: 760,
+        y: 260,
+        props: {
+          text: loadingText,
+          size: 'm',
+          font: 'sans',
+          color: 'black',
+          w: 580,
+        },
       },
     ]);
+  } else {
+    // Update the text shape instead of geo
+    if (shapeExists(editor, 'shape:usecasetext')) {
+      editor.updateShapes([
+        {
+          id: 'shape:usecasetext',
+          type: 'text',
+          props: { text: loadingText },
+        },
+      ]);
+    } else {
+      // Create text shape if it doesn't exist
+      editor.createShapes([
+        {
+          id: 'shape:usecasetext',
+          type: 'text',
+          x: 760,
+          y: 260,
+          props: {
+            text: loadingText,
+            size: 'm',
+            font: 'sans',
+            color: 'black',
+            w: 580,
+          },
+        },
+      ]);
+    }
   }
 };
 
 // Update Use Case shape with final text
 export const updateUseCaseShape = (editor, finalText) => {
-  if (shapeExists(editor, 'shape:usecasebox')) {
+  if (shapeExists(editor, 'shape:usecasetext')) {
     editor.updateShapes([
       {
-        id: 'shape:usecasebox',
-        type: 'geo',
+        id: 'shape:usecasetext',
+        type: 'text',
         props: {
           text: finalText,
-          align: 'start',
-          verticalAlign: 'start',
-          font: 'sans',
-          dash: 'solid',
         },
       },
     ]);
@@ -94,10 +120,6 @@ export const createOrUpdateMarkdownShapes = (editor, loadingText) => {
           fill: 'none',
           dash: 'solid',
           size: 'm',
-          font: 'sans',
-          text: loadingText,
-          align: 'middle',
-          verticalAlign: 'middle',
         },
       },
       {
@@ -112,31 +134,60 @@ export const createOrUpdateMarkdownShapes = (editor, loadingText) => {
           color: 'black',
         },
       },
-    ]);
-  } else {
-    editor.updateShapes([
       {
-        id: 'shape:markdownbox',
-        type: 'geo',
-        props: { text: loadingText },
+        id: 'shape:markdowntext',
+        type: 'text',
+        x: 1460,
+        y: 260,
+        props: {
+          text: loadingText,
+          size: 'm',
+          font: 'sans',
+          color: 'black',
+          w: 580,
+        },
       },
     ]);
+  } else {
+    // Update the text shape instead of geo
+    if (shapeExists(editor, 'shape:markdowntext')) {
+      editor.updateShapes([
+        {
+          id: 'shape:markdowntext',
+          type: 'text',
+          props: { text: loadingText },
+        },
+      ]);
+    } else {
+      // Create text shape if it doesn't exist
+      editor.createShapes([
+        {
+          id: 'shape:markdowntext',
+          type: 'text',
+          x: 1460,
+          y: 260,
+          props: {
+            text: loadingText,
+            size: 'm',
+            font: 'sans',
+            color: 'black',
+            w: 580,
+          },
+        },
+      ]);
+    }
   }
 };
 
 // Update Markdown shape with final text
 export const updateMarkdownShape = (editor, finalText) => {
-  if (shapeExists(editor, 'shape:markdownbox')) {
+  if (shapeExists(editor, 'shape:markdowntext')) {
     editor.updateShapes([
       {
-        id: 'shape:markdownbox',
-        type: 'geo',
+        id: 'shape:markdowntext',
+        type: 'text',
         props: {
           text: finalText,
-          align: 'start',
-          verticalAlign: 'start',
-          font: 'sans',
-          dash: 'solid',
         },
       },
     ]);
@@ -144,14 +195,11 @@ export const updateMarkdownShape = (editor, finalText) => {
 };
 
 // Update description shape
+// Note: shape:1 should be a text shape, not a geo shape with text
 export const updateDescriptionShape = (editor, text) => {
-  editor.updateShapes([
-    {
-      id: 'shape:1',
-      type: 'geo',
-      props: { text: text },
-    },
-  ]);
+  // This function is deprecated - shape:1 should not be a geo with text
+  // If needed, update a separate text shape instead
+  console.warn('updateDescriptionShape: shape:1 should not be updated with text as a geo shape');
 };
 
 // Create or update Flowchart loading box
@@ -171,10 +219,6 @@ export const createOrUpdateFlowchartLoadingBox = (editor, loadingText) => {
           fill: 'solid',
           dash: 'solid',
           size: 'm',
-          font: 'sans',
-          text: loadingText,
-          align: 'middle',
-          verticalAlign: 'middle',
         },
       },
       {
@@ -189,15 +233,46 @@ export const createOrUpdateFlowchartLoadingBox = (editor, loadingText) => {
           color: 'black',
         },
       },
-    ]);
-  } else {
-    editor.updateShapes([
       {
-        id: 'shape:flowchartloadingbox',
-        type: 'geo',
-        props: { text: loadingText },
+        id: 'shape:flowchartloadingtext',
+        type: 'text',
+        x: 1500,
+        y: 320,
+        props: {
+          text: loadingText,
+          size: 'l',
+          font: 'sans',
+          color: 'white',
+        },
       },
     ]);
+  } else {
+    // Update the text shape instead of geo
+    if (shapeExists(editor, 'shape:flowchartloadingtext')) {
+      editor.updateShapes([
+        {
+          id: 'shape:flowchartloadingtext',
+          type: 'text',
+          props: { text: loadingText },
+        },
+      ]);
+    } else {
+      // Create text shape if it doesn't exist
+      editor.createShapes([
+        {
+          id: 'shape:flowchartloadingtext',
+          type: 'text',
+          x: 1500,
+          y: 320,
+          props: {
+            text: loadingText,
+            size: 'l',
+            font: 'sans',
+            color: 'white',
+          },
+        },
+      ]);
+    }
   }
 };
 
@@ -365,28 +440,26 @@ export const createFlowchartShapes = (editor, nodes, edges) => {
   // Calculate layout
   const nodePositions = calculateHierarchicalLayout(nodes, edges);
 
-  // Create node shapes
+  // Create node shapes using custom flowNode shape
   const shapes = [];
   nodes.forEach((node) => {
     const pos = nodePositions.get(node.id);
     const shapeConfig = getShapeConfigForNode(node);
 
     shapes.push({
-      type: 'geo',
+      type: 'flowNode',
       x: pos.x,
       y: pos.y,
       props: {
-        geo: shapeConfig.geo,
+        variant: shapeConfig.geo,
         w: shapeConfig.w,
         h: shapeConfig.h,
-        text: node.label || node.id,
+        richText: toRichText(node.label || node.id),
         color: shapeConfig.color,
         fill: shapeConfig.fill,
         dash: 'solid',
         size: 'm',
         font: 'sans',
-        align: 'middle',
-        verticalAlign: 'middle',
       },
     });
   });

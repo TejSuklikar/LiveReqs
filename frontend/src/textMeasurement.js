@@ -15,8 +15,9 @@ export const createMeasureElement = () => {
 
 export const updateRectangleSize = (app, measureElement) => {
   const textShape = app.getShape('shape:1');
-  if (textShape) {
-    measureElement.innerText = textShape.props.text;
+  if (textShape && textShape.props.richText) {
+    const textContent = textShape.props.richText.text || '';
+    measureElement.innerText = textContent;
     const rect = measureElement.getBoundingClientRect();
     const padding = 40; // Increase padding for more space
 
@@ -30,7 +31,7 @@ export const updateRectangleSize = (app, measureElement) => {
     app.updateShapes([
       {
         id: 'shape:1',
-        type: 'geo',
+        type: 'flowNode',  // Changed from 'geo' to 'flowNode'
         props: {
           w: newWidth,
           h: newHeight,
